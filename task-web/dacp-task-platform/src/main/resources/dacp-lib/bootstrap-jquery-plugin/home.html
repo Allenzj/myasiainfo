@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bootstrap - jQuery - Plugin</title>
+<link href="css/bootstrap.min.css" rel="stylesheet">
+<link href="css/prettify.css" rel="stylesheet">
+<!--[if lt IE 9]>
+  <script src="js/html5shiv.js"></script>
+  <script src="js/respond.min.js"></script>
+<![endif]-->
+<style>
+.github-links{
+  background-color: #EEEEEE;
+  border-bottom: 1px solid #DDDDDD;
+  margin-bottom: 40px;
+  text-align: center;
+}
+
+.github-links li{
+  display: inline-block;
+  list-style: none outside none;
+  margin: 16px 0 2px;
+}
+
+.carousel .item{
+  min-height: 540px;
+}
+
+.carousel .carousel-caption{
+  bottom: auto;
+}
+
+#myCarousel{
+  background-color: #B24926;
+}
+
+#home{
+  margin-top: 50px;
+}
+
+section{
+  margin-bottom: 100px;
+}
+
+section > .container > h1 {
+  background-color: #EEEEEE;
+  padding: 0.4em;
+  margin-top: 54px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top navbar-inverse" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <!-- 
+      <a class="navbar-brand" href="#">Bootstrap Jquery Plugin</a>
+      -->
+    </div>
+    <div class="collapse navbar-collapse">
+      <ul class="nav navbar-nav">
+        <li class="active"><a href="#home">Home</a></li>
+        <li><a href="#string">String</a></li>
+        <li><a href="#dialog">Dialog</a></li>
+        <li><a href="#messager">Messager</a></li>
+        <li><a href="#datagrid">Datagrid</a></li>
+        <li><a href="#tree">Tree</a></li>
+      </ul>
+    </div><!-- /.nav-collapse -->
+  </div><!-- /.container -->
+</div><!-- /.navbar -->
+
+
+<section id="home">
+  <!-- Carousel
+  ================================================== -->
+  <div id="myCarousel" class="carousel slide">
+    <!-- Indicators -->
+    <!-- <ol class="carousel-indicators">
+      <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
+      <li data-target="#myCarousel" data-slide-to="1"></li>
+      <li data-target="#myCarousel" data-slide-to="2"></li>
+    </ol> -->
+    <div class="carousel-inner">
+      <div class="item active">
+        <div class="container">
+          <div class="carousel-caption">
+            <br>
+            <h1 style="font-size: 52px;">Bootstrap jQuery Plugin</h1>
+            <br><br><br><br><br>
+            <h2>
+              A simple light weight jquery plugin library to make working with Bootstrap css.
+            </h2>
+            <br><br><br><br><br>
+            <p>
+              <a class="btn btn-large btn-primary" href="https://raw.githubusercontent.com/newghost/bootstrap-jquery-plugin/master/js/jquery.bootstrap.min.js"
+                style="font-size:18px">
+                Download jquery.bootstrap.min.js
+              </a>
+            </p>
+          </div>
+        </div>
+      </div>
+      <!--
+      <div class="item">
+        <div class="container">
+          <div class="carousel-caption">
+            <h1>Another example headline.</h1>
+            <p>Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus. Nullam id dolor id nibh ultricies vehicula ut id elit.</p>
+            <p><a class="btn btn-large btn-primary" href="#">Learn more</a></p>
+          </div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="container">
+          <div class="carousel-caption">
+            <h1>One more for good measure.</h1>
+            <p>Cras justo odio, dapibus ac facilisis in, egestas eget quam. Donec id elit non mi porta gravida at eget metus. Nullam id dolor id nibh ultricies vehicula ut id elit.</p>
+            <p><a class="btn btn-large btn-primary" href="#">Browse gallery</a></p>
+          </div>
+        </div>
+      </div>
+      -->
+    </div>
+    <a class="left carousel-control" href="#myCarousel" data-slide="prev">
+      <!-- <span class="glyphicon glyphicon-chevron-left"></span> -->
+    </a>
+    <a class="right carousel-control" href="#myCarousel" data-slide="next">
+      <!-- <span class="glyphicon glyphicon-chevron-right"></span> -->
+    </a>
+  </div><!-- /.carousel -->
+  <!-- Source codes -->
+  <div class="github-links">
+    <div class="container">
+      <ul>
+        <li>
+          <iframe width="95px" scrolling="0" height="20px" frameborder="0" allowtransparency="true" src="http://ghbtns.com/github-btn.html?user=newghost&repo=bootstrap-jquery-plugin&type=fork&count=true"></iframe>
+        </li>
+        <li>
+          <iframe width="95px" scrolling="0" height="20px" frameborder="0" allowtransparency="true" src="http://ghbtns.com/github-btn.html?user=newghost&repo=bootstrap-jquery-plugin&type=watch&count=true"></iframe>
+        </li>
+        <li>
+          <iframe width="165px" scrolling="0" height="20px" frameborder="0" allowtransparency="true" src="http://ghbtns.com/github-btn.html?user=newghost&type=follow&count=true"></iframe>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<div class="container ad">
+  <div style="margin:54px auto 84px;width:728px">
+  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <!-- ourjs_width -->
+  <ins class="adsbygoogle"
+       style="display:inline-block;width:728px;height:90px"
+       data-ad-client="ca-pub-1941367294435664"
+       data-ad-slot="9387478833"></ins>
+  <script>
+  (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+  </div>
+</div>
+
+<section id="string">
+<div class="container">
+  <h1>string.format.js</h1>
+  <hr>
+  <p>Provide a simple string.format method</p>
+  <pre class="prettyprint linenums">
+      "{0} is old, {1} is new, {0} long lives".format("ASP", "ASP.net")
+      //console
+      "ASP is old, ASP.net is new, ASP long lives"
+  </pre>
+
+  </div>
+</div>
+</section>
+
+
+<section id="dialog">
+<div class="container">
+  <h1>
+    <a href="https://raw.githubusercontent.com/newghost/bootstrap-jquery-plugin/master/src/jquery.dialog.js">jquery.dialog.js</a>
+  </h1>
+  <hr>
+
+  <p>jquery dialog plugin based on bootstrap css</p>
+  <h4>DEMO: This is login form</h4>
+
+  <pre class="prettyprint linenums">
+      &lt;div id="loginwrap"&gt;
+      &lt;form id="loginform" role="form"&gt;
+        &lt;div class="form-group"&gt;
+          &lt;label for="username"&gt;Username&lt;/label&gt;
+          &lt;input type="username" class="form-control"
+           id="username"&gt;
+        &lt;/div&gt;
+        &lt;div class="form-group"&gt;
+          &lt;label for="password"&gt;Password&lt;/label&gt;
+          &lt;input type="password" class="form-control"
+          id="password"&gt;
+        &lt;/div&gt;
+      &lt;/form&gt;
+    &lt;/div&gt;
+  </pre>
+
+  <hr>
+  <div class="hide">
+    <div id="loginwrap">
+      <form id="loginform" role="form">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="username" class="form-control"
+           id="username">
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" class="form-control"
+          id="password">
+        </div>
+      </form>
+    </div>
+    <div id="loginwrap2">
+      <form id="loginform" role="form">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="username" class="form-control"
+           id="username">
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" class="form-control"
+          id="password">
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-6">
+      <h3>create</h3>
+      <hr>
+      <p>
+        Create a dialog
+        <a class="btn btn-success" onclick="run('#prevCreateDialog')">Run</a>
+      </p>
+      <pre id="prevCreateDialog" class="prettyprint linenums">
+      $("#loginwrap").dialog({title:"Login"});
+      </pre>
+
+      <h3>create ( with backdrop or keyboard )</h3>
+      <hr>
+      <p>
+        Create a dialog which doesn't close on click on the background.
+        <a class="btn btn-success" onclick="run('#prevCreateDialog2')">Run</a>
+      </p>
+      <pre id="prevCreateDialog2" class="prettyprint linenums">
+      $("#loginwrap2").dialog({title:"Login", backdrop: "static"});
+      </pre>
+
+      <h3>create without auto open</h3>
+      <hr>
+      <p>
+        Create a dialog with (autoOpen or show)
+        <a class="btn btn-success" onclick="run('#prevCreateDialogWithoutAuto')">Run</a>
+      </p>
+      <pre id="prevCreateDialogWithoutAuto" class="prettyprint linenums">
+      $("#loginwrap").dialog({title:"Login", autoOpen: false});
+      </pre>
+
+      <h3>open</h3>
+      <hr>
+      <p>
+        Open a dialog
+        <a class="btn btn-success" onclick="run('#preOpenDialog')">Run</a>
+      </p>
+      <pre id="preOpenDialog" class="prettyprint linenums">
+      $("#loginwrap").dialog("open");
+      </pre>
+
+      <h3>destroy</h3>
+      <hr>
+      <p>
+        Rut the element to the old place, remove the overlay from DOM.
+      <pre class="prettyprint linenums">
+      $("#loginwrap").dialog("destroy");
+      </pre>
+
+      <h3>onClose</h3>
+      <hr>
+      <p>Override onClose event</p>
+      <pre class="prettyprint linenums">
+      $("#loginwrap").dialog({
+          title:   "DEMO"
+        , onClose: function() { 
+            // your handler
+            $(this).dialog("destroy");
+        }
+      });</pre>
+
+      <h3>option buttons</h3>
+      <hr>
+      <p>
+        Redefine the buttons
+        <a class="btn btn-success" onclick="run('#preChangeButton')">Run</a>
+      </p>
+      <pre id="preChangeButton" class="prettyprint linenums">
+      $( "#loginwrap" ).dialog(
+          "option"
+        , "buttons"
+        , [{ 
+              text: "Ok"
+            , click: function() {
+                $( this ).dialog( "close" );
+            }
+        }]
+      );
+      </pre>
+    </div>
+
+    <div class="col-lg-6">
+      <h3>buttons: Array; class: Custom Class</h3>
+      <hr>
+      <p>
+        Open dialog with buttons
+        <a class="btn btn-success" onclick="run('#preButtonDialog')">Run</a>
+      </p>
+      <pre id="preButtonDialog" class="prettyprint linenums">
+      $("#loginwrap").dialog({
+          title:    "Login"
+        , 'class':  "mydialog"  /*add custom class for this dialog*/
+        , onClose: function() { $(this).dialog("close"); }
+        , buttons: [
+            {
+                text: "Close"
+              , 'class': "btn-primary"
+              , click: function() {
+                  $(this).dialog("close");
+                }
+            },
+            {
+                text: "Login"
+              , 'class': "btn-success"
+              , click: function() {
+                  /*your login handler*/
+
+                  $(this).dialog("close");
+                }
+            },
+            {
+                text: "Destroy"
+              , classed: "btn-error"  /*classed equal to 'class'*/
+              , click: function() {
+                  /*your login handler*/
+
+                  $(this).dialog("destroy");
+                }
+            }
+          ]
+      });
+      </pre>
+
+      <h3>buttons: Object</h3>
+      <hr>
+      <p>
+        Open dialog with buttons: Object
+        <a class="btn btn-success" onclick="run('#preButtonDialogObject')">Run</a>
+      </p>
+      <pre id="preButtonDialogObject" class="prettyprint linenums">
+      $("#loginwrap").dialog({
+          title:    "Login"
+        , 'class':  "mydialog"  /*add custom class for this dialog*/
+        , onClose: function() { $(this).dialog("close"); }
+        , buttons: {
+              "Close": function() {
+                  $(this).dialog("close");
+              }
+            , "Login": function() {
+                  /*your login handler*/
+
+                  $(this).dialog("close");
+              }
+          }
+      });
+      </pre>
+
+      <h3>dialogClass: Optional sizes</h3>
+      <p>
+        Smaller <a class="btn btn-success" onclick="run('#preButtonSmallDialog')">Run</a>
+      </p>
+      <pre id="preButtonSmallDialog" class="prettyprint linenums">
+      $("#loginwrap").dialog({
+          title       : "Login"
+        , dialogClass : "modal-sm"
+      });
+      </pre>
+
+      <p>
+        Bigger <a class="btn btn-success" onclick="run('#preButtonBigDialog')">Run</a>
+      </p>
+      <pre id="preButtonBigDialog" class="prettyprint linenums">
+      $("#loginwrap").dialog({
+          title       : "Login"
+        , dialogClass : "modal-lg"
+      });
+      </pre>
+    </div>
+
+  </div>
+</div>
+</section>
+
+<section id="messager">
+<div class="container marketing">
+  <h1>jquery.messager.js</h1>
+  <hr>
+  <p>jquery messager(message box) plugin based on bootstrap css</p>
+
+  <h2>alert</h2>
+  <hr>
+  <p>popup alert message</p>
+  <div class="row">
+    <div class="col-lg-6">
+      <p>
+        simple message
+        <a class="btn btn-success" onclick="run('#messagerMsg')">Run</a>
+      </p>
+      <pre id="messagerMsg" class="prettyprint linenums">
+      $.messager.alert("This is message!");
+      </pre>
+    </div>
+
+    <div class="col-lg-6">
+      <p>
+        message with title
+        <a class="btn btn-success" onclick="run('#messagerMsgTitle')">Run</a>
+      </p>
+      <pre id="messagerMsgTitle" class="prettyprint linenums">
+      $.messager.alert("Title", "This is message!");
+      </pre>
+    </div>
+  </div>
+
+  <h2>confirm</h2>
+  <hr>
+  <p>confirm message</p>
+  <div class="row">
+    <div class="col-lg-6">
+      <p>
+        with callback
+        <a class="btn btn-success" onclick="run('#confirmMsg')">Run</a>
+      </p>
+      <pre id="confirmMsg" class="prettyprint linenums">
+      $.messager.confirm("title", "This is message!", function() { 
+        alert("you closed it")
+      });
+      </pre>
+    </div>
+
+    <div class="col-lg-6">
+      <p>
+        localization, override message
+        <a class="btn btn-success" onclick="run('#localizationMsg')">Run</a>
+      </p>
+      <pre id="localizationMsg" class="prettyprint linenums">
+      $.messager.model = { 
+        ok:{ text: "关闭", classed: 'btn-default' },
+        cancel: { text: "取消", classed: 'btn-error' }
+      };
+      $.messager.confirm("title", "This is message!", function() { 
+        alert("you closed it")
+      });
+      </pre>
+    </div>
+  </div>
+
+  <h2>popup</h2>
+  <hr>
+  <p>popup message</p>
+  <div class="row">
+    <div class="col-lg-6">
+      <p>
+        <a class="btn btn-success" onclick="run('#popupmsg')">Run</a>
+      </p>
+      <pre id="popupmsg" class="prettyprint linenums">
+      $.messager.popup("This is message!");
+      </pre>
+    </div>
+
+    <div class="col-lg-6">
+      <p>
+        custom css, apply and run again
+        <a class="btn btn-success" onclick="apply('#popupmsg_custom')">Apply</a>
+      </p>
+      <pre id="popupmsg_custom" class="prettyprint">
+      &lt;style&gt;
+      .modal-open {
+        overflow: auto;
+        padding: 0 !important;
+      }
+
+      .modal.msg-popup {
+        top: auto;
+      }
+
+      .modal.msg-popup .modal-dialog {
+        width: 300px !important;
+        margin: 30px auto 60px;
+      }
+
+      .modal.msg-popup .modal-body {
+        background-color: #000;
+        color: #fff;
+      }
+
+      .modal.msg-popup .modal-content {
+        border: none;
+      }
+      &lt;/style&gt;
+      &lt;script&gt;
+      $.messager.popup("Custom layout");
+      &lt;/script&gt;
+      </pre>
+    </div>
+  </div>
+
+</div>
+</section>
+
+<section id="datagrid">
+<div class="container marketing">
+  <h1>jquery.datagrid.js</h1>
+  <hr>
+  <p>jquery datagrid plugin based on bootstrap css</p>
+
+
+  <!-- Three columns of text below the carousel -->
+  <h2>load</h2>
+  <hr>
+  <p>load data from json object</p>
+  <div class="row">
+    <div class="col-lg-6">
+      <p>html</p>
+      <pre class="prettyprint linenums">
+        &lt;table id="tablewrap1" class="table table-striped"&gt;&lt;/table&gt;
+      </pre>
+      <table id="tablewrap1" class="table table-striped"></table>
+    </div>
+    <div class="col-lg-6">
+      <p>codes</p>
+      <pre class="prettyprint linenums">
+      var $table = $('#tablewrap1');
+
+      var rows =[
+        {"name":"item12","type":"Free","sum":143400},
+        {"name":"item13","type":"Free","sum":3426919},
+        {"name":"item14","type":"Free","sum":3343312},
+        {"name":"item15","type":"Free","sum":120330},
+        {"name":"item16","type":"Not Free","sum":319492},
+        {"name":"item31","type":"Not Free","sum":321338},
+        {"name":"item13","type":"Unknow","sum":342219},
+        {"name":"item54","type":"Unknow","sum":231000},
+        {"name":"item36","type":"Unknow","sum":259451},
+        {"name":"item34","type":"Unknow","sum":449563}
+      ];
+
+      $table.datagrid({
+        columns:[[
+            {title: "Name", field: "name"}
+          , {title: "Type", field: "type"}
+          , {title: "Number", field: "sum"}
+        ]]
+      }).datagrid("loadData", {rows: rows});
+      </pre>
+    </div>
+  </div>
+
+  <h2>edit</h2>
+  <hr>
+  <p>edit json data</p>
+  <div class="row">
+    <div class="col-lg-6">
+      <p>html</p>
+      <pre class="prettyprint linenums">
+        &lt;table id="tablewrap2" class="table table-hover"&gt;&lt;/table&gt;
+      </pre>
+      <table id="tablewrap2" class="table table-hover"></table>
+      <p>codes</p>
+      <pre class="prettyprint linenums">
+      var $editTable = $('#tablewrap2');
+
+      $editTable.datagrid({
+        columns:[[
+            {title: "Name", field: "name", formatter: function(val) {
+              //override default input field
+              return val;
+            }}
+          , {title: "Type", field: "type", readonly: true}
+          , {title: "Number", field: "sum"}
+        ]]
+        , edit: true
+        , singleSelect:  true //false allow multi select
+        , selectedClass: 'danger' //default: 'success'
+        , selectChange: function(selected, rowIndex, rowData, $row) {
+            //allow multi-select
+            //console.log(selected, rowIndex, rowData, $row);
+          }
+      }).datagrid("loadData", {rows: rows});
+      </pre>
+    </div>
+
+    <div class="col-lg-6">
+      <p>
+        updateRow(index)
+        <a class="btn btn-success" onclick="run('#updateRow')">Run</a>
+      </p>
+      <pre class="prettyprint linenums" id="updateRow">$('#tablewrap2').datagrid("updateRow", {index: 0, row: {name: "Good luck", sum: new Date() }});</pre>
+
+      <p>
+        updateRow
+        <a class="btn btn-success" onclick="run('#updateRowNoIdx')">Run</a>
+      </p>
+      <pre class="prettyprint linenums" id="updateRowNoIdx">$('#tablewrap2').datagrid("updateRow", {row: {name: "Good luck", sum: new Date() }});</pre>
+
+
+      <p>
+        selectRow(index)
+        <a class="btn btn-success" onclick="run('#selectRow_idx')">Run</a>
+      </p>
+      <pre class="prettyprint linenums" id="selectRow_idx">$('#tablewrap2').datagrid("selectRow", 1);</pre>
+
+      <p>
+        selectRow
+        <a class="btn btn-success" onclick="run('#selectRow')">Run</a>
+      </p>
+      <pre class="prettyprint linenums" id="selectRow">$('#tablewrap2').datagrid("selectRow");</pre>
+
+      <p>
+        unselectRow(index)
+        <a class="btn btn-success" onclick="run('#unselectRow_all')">Run</a>
+      </p>
+      <pre class="prettyprint linenums" id="unselectRow_all">$('#tablewrap2').datagrid("unselectRow", 1);</pre>
+
+      <p>
+        unselectRow
+        <a class="btn btn-success" onclick="run('#unselectRow')">Run</a>
+      </p>
+      <pre class="prettyprint linenums" id="unselectRow">$('#tablewrap2').datagrid("unselectRow");</pre>
+
+      <p>
+        getSelections
+        <a class="btn btn-success" onclick="run('#getSelections')">Run</a>
+      </p>
+      <pre class="prettyprint linenums" id="getSelections">$('#tablewrap2').datagrid("getSelections");</pre>
+      <pre id="getSelectionsResult"></pre>
+
+      <p>
+        getSelectedIndex
+        <a class="btn btn-success" onclick="run('#getSelectedIndex')">Run</a>
+      </p>
+      <pre class="prettyprint linenums" id="getSelectedIndex">$('#tablewrap2').datagrid("getSelectedIndex");</pre>
+      <pre id="getSelectedIndexResult"></pre>
+
+      <p>
+        getData
+        <a class="btn btn-success" onclick="run('#getData')">Run</a>
+      </p>
+      <pre class="prettyprint linenums" id="getData">$('#tablewrap2').datagrid("getData");</pre>
+      <pre id="getDataResult"></pre>
+
+      <p>
+        getConfig
+        <a class="btn btn-success" onclick="run('#getConfig')">Run</a>
+      </p>
+      <pre class="prettyprint linenums" id="getConfig">$('#tablewrap2').datagrid("getConfig");</pre>
+      <pre id="getConfigResult"></pre>
+
+      <p>
+        getColumns
+        <a class="btn btn-success" onclick="run('#getColumns')">Run</a>
+      </p>
+      <pre class="prettyprint linenums" id="getColumns">$('#tablewrap2').datagrid("getColumns");</pre>
+      <pre id="getColumnsResult"></pre>
+
+      <p>
+        insertRow(index)
+        <a class="btn btn-success" onclick="run('#insertRow')">Run</a>
+      </p>
+      <pre class="prettyprint linenums" id="insertRow">$('#tablewrap2').datagrid("insertRow", {index: 3, row: {"name":"new" + (Math.random() * 100 | 0)}});</pre>
+
+      <p>
+        insertRow()
+        <a class="btn btn-success" onclick="run('#insertRowNoIdx')">Run</a>
+      </p>
+      <pre class="prettyprint linenums" id="insertRowNoIdx">$('#tablewrap2').datagrid("insertRow", {row: {"name":"new" + (Math.random() * 100 | 0)}});</pre>
+
+      <p>
+        deleteRow(index)
+        <a class="btn btn-success" onclick="run('#deleteRow')">Run</a>
+      </p>
+      <pre class="prettyprint linenums" id="deleteRow">$('#tablewrap2').datagrid("deleteRow", 0);</pre>
+
+      <p>
+        deleteRow()
+        <a class="btn btn-success" onclick="run('#deleteRowNoIdx')">Run</a>
+      </p>
+      <pre class="prettyprint linenums" id="deleteRowNoIdx">$('#tablewrap2').datagrid("deleteRow");</pre>
+
+    </div>
+  </div>
+
+</div>
+</section>
+
+<section id="tree">
+<div class="container">
+  <h1>jquery.tree.js</h1>
+  <hr>
+  <div class="row">
+    <div class="col-lg-6">
+      <p>html</p>
+      <pre class="prettyprint linenums">
+        &lt;ul id="treewrap"&gt;&lt;/ul&gt;
+      </pre>
+      <ul id="treewrap"></ul>
+      <p>codes</p>
+      <pre class="prettyprint linenums">
+      var $tree = $('#treewrap');
+
+      var treeDataArr = [
+          {
+              id:         "root"
+            , text:       "Root"
+            , attributes: { yourfield: "your value" }
+            , children: [
+                  {
+                      id:         "tool"
+                    , text:       "Tool"
+                  }
+                , {
+                      id:         "users"
+                    , text:       "Users"
+                    , state:      "close"
+                    , children:   [
+                          {text: "Kris"}
+                        , {text: "Tom"}
+                        , {text: "Jerry"}
+                        , {text: "Dna"}
+                      ]
+                  }
+              ]
+          }
+        , {
+              text:       "Guest"
+          }
+        , {
+              id:         "admin"
+            , text:       "Admin"
+          }
+      ];
+
+      $tree.tree({data: treeDataArr});
+      </pre>
+    </div>
+    <div class="col-lg-6">
+      <p>
+        onClick
+        <a class="btn btn-success" onclick="run('#onClick')">Run</a>
+      </p>
+      <pre class="prettyprint linenums" id="onClick">
+      $('#treewrap').tree({
+          data:     treeDataArr
+        , onClick:  function(node, $link) {
+            console.log($(this), node, $link);
+          }
+      });
+      </pre>
+    </div>
+  </div>
+</div>
+</section>
+
+<br><br><br>
+
+<div class="container">
+  <!-- FOOTER -->
+  <footer>
+    <p class="pull-right"><a href="#">Back to top</a></p>
+    <p>
+      &copy;
+      <a href="https://github.com/newghost/bootstrap-jquery-plugin">
+      bootstrap-jquery-plugin@newghost</a>
+    </p>
+  </footer>
+</div>
+
+<script src="js/jquery-1.10.2.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/prettify.js"></script>
+<script src="js/jquery.bootstrap.js"></script>
+<script src="js/site.js"></script>
+
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-43238430-2', 'ourjs.com');
+ga('send', 'pageview');
+</script>
+</body>
+</html>

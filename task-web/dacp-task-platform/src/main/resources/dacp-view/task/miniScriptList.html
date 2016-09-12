@@ -1,0 +1,518 @@
+﻿<!DOCTYPE html>
+<html lang="en" class="app">
+    <head>
+      <meta charset="utf-8" /> 
+      <title>DACP数据云图</title>   
+      <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"  />  
+      <link href="../dacp-lib/bootstrap/css/bootstrap.min.css" type="text/css" rel="stylesheet" media="screen"/>
+      <link href="../public/css/ai.css" type="text/css" rel="stylesheet"/>
+      <script type="text/javascript" src="../sysmgr/asiainfo/gojs/release/go.js"></script>
+      <script type="text/javascript" src="../lib/ext/ext-base.js"></script>
+      <script type="text/javascript" src="../lib/ext/ext-all.js"></script>
+	  <script type="text/javascript" src="../sysmgr/asiainfo/Asiainfo.js"></script>
+<script src="../dacp-lib/jquery/jquery-1.10.2.min.js" type="text/javascript"></script>
+      <script src="../dacp-lib/bootstrap/js/bootstrap.min.js"> </script>
+      <script src="../lib/jquery.layout-latest.js"> </script>
+      <script src="../lib/bootstrap-treeview.min.js"> </script>
+      <script src="../public/js/app.plugin.js"> </script>
+      <script src="../public/js/ai.core.js"></script>
+      <script src="../public/js/ai.field.js"></script>
+      <script src="../public/js/ai.grid.js"></script>
+      <script src="../public/js/ai.jsonstore.js"></script>
+      <script src="../public/js/ai.treeview.js"></script>
+ 
+<style>
+body {
+	margin: 0;
+	font-family: Roboto, arial, sans-serif;
+	font-size: 13px;
+	line-height: 20px;
+	color: #444444;
+	background-color: #f1f1f1;
+}
+
+a{
+	cursor:pointer;
+}
+
+.navbar-btn.btn-sm {
+	margin-top: 5px;
+	margin-bottom: 10px;
+}
+
+tr.active.table-text-visited {
+	color: #4CB6CB;
+	background-color: #000000;
+	font-weight: bold;
+}
+
+.ui-layout-north {
+	z-index: 10000 !important;
+}
+
+.ui-layout-center {
+	overflow: auto;
+}
+
+.ui-layout-resizer-west {
+	border-width: 0 1px;
+}
+
+.ui-layout-toggler-west {
+	border-width: 0;
+}
+
+.ui-layout-toggler-west div {
+	width: 4px;
+	height: 35px; /* 3x 35 = 105 total height */
+}
+
+</style>
+<script>
+var curTeamCodeCond="";
+var proc_state="";
+var run_freq="";
+var trigger_type="";
+var getQueryCondition = function(){
+	var _searchText = $("#search-text").val().trim();
+	var _searchCondi =_searchText.length>1?" AND (proccnname LIKE '%"+ _searchText+"%' or a.proc_name LIKE '%"+_searchText+"%')":"";
+	    _searchCondi += trigger_type.length>0?" AND  trigger_type='"+trigger_type+"'":"";
+	    _searchCondi += proc_state.length>0?" AND state='"+proc_state+"'":"";
+	    _searchCondi += run_freq.length>0?" AND run_freq='"+run_freq+"'":"";
+    return _searchCondi;
+};
+$(document).ready(function() {
+	var curTeamCode = paramMap['TEAM_CODE'];
+	curTeamCodeCondi = (typeof(curTeamCode)=="undefined" || curTeamCode =='' || curTeamCode == 'undefined' )?(''):("  and team_code = '"+curTeamCode+"' ")
+	curTeamCodeCondi="";
+	var curDisplayType="grid";
+	var searchCondi='';
+	var curdata;
+	var toggleButtons = '<div class="btnCenter"></div>'
+		+ '<div class="btnBoth"></div>'
+		+ '<div class="btnWest"></div>';
+	$('body').layout({
+	    	sizable:						false
+		,	animatePaneSizing:				true
+		,	fxSpeed:						'slow'
+		,	spacing_open:					0
+		,	spacing_closed:					0
+		,	west__spacing_closed:			8
+		,	west__spacing_open:				8
+		,	west__togglerLength_closed:		105
+		,	west__togglerLength_open:		105
+		,	west__togglerContent_closed:	toggleButtons
+		,	west__togglerContent_open:		toggleButtons
+		,	west__size:						205
+		,	north__size: 					50
+	});
+    var platformStore = new AI.JsonStore({
+        sql:"select PLATFORM,PLATFORM_CNNAME from PROC_SCHEDULE_PLATFORM ",
+        key:"PLATFORM",
+        pageSize:-1,
+        table:"PROC_SCHEDULE_PLATFORM"
+    });
+    var procSql="select a.PROC_NAME,PROCCNNAME,PATH,PROCTYPE,AGENT_CODE,TRIGGER_TYPE,RUN_FREQ,ST_DAY,ST_TIME,CRON_EXP,PRI_LEVEL,PLATFORM,RESOUCE_LEVEL,REDO_NUM,DATE_ARGS,MUTI_RUN_FLAG,DURA_MAX,STATE,EFF_DATE,CURDUTYER,CREATER from proc  a,proc_schedule_info  b WHERE a.PROC_NAME = b.PROC_NAME {condi}  order by eff_date desc";
+    
+    var procStore = new AI.JsonStore({
+		sql:procSql.replace("{condi}",""+curTeamCodeCondi),
+		pageSize:15,
+		key:"PROC_NAME",
+		table:"PROC"
+	});
+	var buildTreeView = function(sql){
+		$('#treeview6').treeview({
+			color: "#428bca",
+			expandIcon: "glyphicon glyphicon-chevron-right",
+			collapseIcon: "glyphicon glyphicon-chevron-down",
+			nodeIcon: "glyphicon glyphicon-tasks",
+			showTags: true,
+			onNodeSelected:function(event,node){
+				var strArray=node.id.split(">");
+				var where="";
+				for(var i=0;i<strArray.length;i++){
+					var str =strArray[i];
+					var subWhere=str.split(":")[0]+" = '"+str.split(":")[1]+"'";
+					if(str.split(":")[1]=='未知') subWhere = str.split(":")[0] +" is null ";
+					if(where) where += " and "+ subWhere
+					else where=subWhere;
+				}
+				where = where.length>0?(" and "+where):"";
+				procStore.select(procSql.replace("{condi}",where+searchCondi));
+				if(curDisplayType=="card"){
+					$("#tabpanel2").show();
+					$("#datagrid").hide();
+				}else{
+					$("#datagrid").show();
+					$("#tabpanel2").hide();
+				}
+			},
+			groupfield:"TOPICNAME",//"TOPICNAME,LEVEL_VAL",//SCHEMA_NAME,TABSPACE,
+			titlefield:"MODELNAME",
+			iconfield:"",
+			sql:sql,
+			subtype: 'grouptree' 
+		});
+	};
+	var _rowClickFunc = function (e,agr){
+		curdata= agr.data;
+	};
+	var celldblclick = function(dataIndex, record){};
+	var _rowdblClickFunc = function(val,rowdata){
+		if(rowdata){
+			//window.open("WizCreTable.html?OBJNAME="+rowdata.get('DATANAME'));
+			//parent.loadTabStruct(rowdata.get('DATANAME'));
+			var r = procStore.curRecord;
+		   	var DBNAME = DBNAME='defaultDB';
+		  	var METAPRJ = '';
+		  	var caption='';
+		  	if(DBNAME!='defaultDB') caption=DBNAME;
+		  	  
+		  	if(r.get('PROCTYPE')=='WIDETAB'){
+		  		  Asiainfo.addTabSheet(r.get('PROC_NAME'),caption+'模型:'+r.get('PROC_NAME'),'../devmgr/procDesign.html?PROCNAME='+r.get('PROC_NAME')+'&DBNAME='+DBNAME+'&METAPRJ='+METAPRJ);
+		  	} else  if (r.get('PROCTYPE')=='SCRIPT') {
+		   	        Asiainfo.addTabSheet(DBNAME+r.get('PROC_NAME'),caption+'程序:'+r.get('PROC_NAME'),'../asiainfo/ProcGraph/procGraph.html?PROCNAME='+r.get('PROC_NAME')+'&DBNAME='+DBNAME+'&METAPRJ='+METAPRJ);
+		  	} else {
+		   	        Asiainfo.addTabSheet(DBNAME+r.get('PROC_NAME'),caption+'程序:'+r.get('PROC_NAME'),'../devmgr/ObjEditer.html?&OBJTYPE=PROC&OBJNAME='+r.get('PROC_NAME')+'&DBNAME='+DBNAME+'&METAPRJ='+METAPRJ);
+		  	}   
+		}
+		return false;
+	};
+	var _stateRender=function (value,data,index){
+		 var _val=value.get("STATE");
+	 		 var finalVal="";
+	 		 if(_val=="UNPUBLISH"){
+	 			finalVal='<div><font color="blue">待发布</font></div>';
+	 		 }else if(_val=="INVALID"){
+	 			finalVal='<div><font color="red">失效</font></div>';
+	 		 }else if(_val=="VALID"){
+	 			finalVal='<div><font color="green">生效</font></div>';
+	 		 }else  if(_val=="PUBLISHED"){
+	 			 finalVal='<div><font color="black">已发布</font></div>';
+	 		 }else {
+	 			 finalVal='<div><font color="blue">待发布</font></div>';
+	 		 }
+	 		 return finalVal; 
+	};
+	var _platformRender=function(value,data,index){
+	 	    var r=  platformStore.getRecordByKey(value.get("PLATFORM"));
+	 	    return r?r.get("PLATFORM_CNNAME"):"--";
+    };
+    var _runFreqRender=function(value,data,index){
+	    	 var _freq= value.get("RUN_FREQ");
+  	    	 _freq=_freq=="day"?"日":_freq;
+  	    	 _freq=_freq=="month"?"月":_freq;
+  	    	 _freq=_freq=="hour"?"小时":_freq;
+  	    	 _freq=_freq=="week"?"周":_freq;
+  	    	 return _freq;
+  	} ;
+  	var _levelRender=function(value,data,index){
+  		return value.get("RESOUCE_LEVEL")==3?"高":value.get("RESOUCE_LEVEL")==2?"中":"低";
+  	};
+
+	var config={
+		id:'datagrid',
+		store:procStore,
+		pageSize:12,
+		containerId:'datagrid',
+		nowrap:true,
+		showcheck:true,
+		rowclick:_rowClickFunc,
+		celldblclick:_rowdblClickFunc,
+		columns:[
+		　  {header: "程序名称", width:130,dataIndex: 'PROC_NAME'},
+	  	     {header: "中文名称", width:200, dataIndex: 'PROCCNNAME'},
+	  	     {header: "当前状态", width:74, dataIndex: 'STATE',render:_stateRender},
+	  	     //{header: "路径", width:116, dataIndex: 'PATH'},
+	  	     {header: "触发类型", width:75, dataIndex: 'TRIGGER_TYPE',render:function(val){ return val.get("TRIGGER_TYPE")==0?"时间触发":"事件触发";}},
+	  	     {header: "Agent", width:64, dataIndex: 'AGENT_CODE'},
+	  	     //{header: "程序类型", width:60, dataIndex: 'PROCTYPE'},
+	  	     {header: "周期", width:60, dataIndex: 'RUN_FREQ',render:_runFreqRender},
+	  	     //{header: "开始日期", width:80, dataIndex: 'ST_DAY' },
+	  	   	 //{header: "开始时间", width:100, dataIndex: 'ST_TIME' },
+	  	     //{header: "重做次数", width:80, dataIndex: 'REDO_NUM' },
+		   	 //{header: "日期参数偏移量", width:50, dataIndex: 'DATE_ARGS' },
+		     //{header: "执行模式", width:100, dataIndex: 'MUTI_RUN_FLAG' },
+		   	 //{header: "最大运行时间", width:100, dataIndex: 'DURA_MAX' },
+		 	 //{header: "生效期", width:100, dataIndex: 'EFF_DATE' },
+		 	 //{header: "当前负责人", width:100, dataIndex: 'CURDUTYER'},
+	  	     //{header: "cron表达式", width:100, dataIndex: 'CRON_EXP' },
+	  	   	 {header: "优先级", width:100, dataIndex: 'PRI_LEVEL' },
+	  	 	 //{header: "资源级别", width:100, dataIndex: 'RESOUCE_LEVEL',render:_levelRender},
+	  	 	 {header: "接入平台", width:100, dataIndex: 'PLATFORM',render:_platformRender },
+	  	 	 {header: "创建者", width:80, dataIndex: 'CREATER' },
+	  	 	 {header: "修改者", width:80, dataIndex: 'CURDUTYER' },
+	  	 	 {header: "修改时间", width:100, dataIndex: 'EFF_DATE' }
+	  	 	 
+		]
+	};
+	var grid =new AI.Grid(config);
+	var _treeSql  = " SELECT  TOPICNAME,LEVEL_VAL,COUNT(1) NUM FROM PROC a,PROC_SCHEDULE_INFO b "
+		  _treeSql+= " WHERE a.proc_name = b.proc_name  {condi}  GROUP BY TOPICNAME,LEVEL_VAL ORDER BY NUM DESC";
+	buildTreeView(_treeSql.replace("{condi}",""));
+	var switchContent = function(condi){
+		buildTreeView(_treeSql.replace("{condi}",condi));
+		procStore.select(procSql.replace("{condi}",condi));
+	};
+	$('#trigger_type_select').on('change',function(e){
+		trigger_type= $("#trigger_type_select").val();
+		searchCondi = getQueryCondition();
+        switchContent(searchCondi);
+	});
+	$('#proc_state_select').on('change',function(e){
+		proc_state = $("#proc_state_select").val();
+		searchCondi = getQueryCondition();
+		switchContent(searchCondi);
+	});
+	$('#run_freq_select').on('change',function(e){
+		run_freq = $("#run_freq_select").val();
+		searchCondi = getQueryCondition();
+		switchContent(searchCondi);
+	});
+	$('#search-key').on('click',function(e){
+		searchCondi = getQueryCondition();
+		switchContent(searchCondi);
+	});
+    $("#insertBtn").click(function(){
+    	var proc_name = '';
+    	var DBNAME = '';
+    	var METAPRJ = '';
+    	var caption = '';
+    	Asiainfo.addTabSheet(DBNAME + proc_name,caption+'程序:'+proc_name,'../devmgr/ObjEditer.html?&OBJTYPE=PROC&OBJNAME='+ proc_name +'&DBNAME='+DBNAME+'&METAPRJ='+METAPRJ);
+   });
+	$("#publishBtn").on("click",function(){
+		var dataArray = grid.getCheckedRows();
+		var updateProc = "";
+		var proc_name="";
+		var date = new Date();
+		var _date = date.format("yyyy-mm-dd hh:mm:ss");
+		if(dataArray.length>0){
+			for(var i=0;i<dataArray.length;i++){
+				proc_name=dataArray[i].get("PROC_NAME");
+				updateProc = "update proc set state='PUBLISHED' ,CURDUTYER='"+_UserInfo.usercnname+"',EFF_DATE='"+_date+"' where proc_name='"+proc_name+"'" ;
+				ai.executeSQL(updateProc,false,"");
+			}
+			procStore.select();
+		}else{
+			alert("请先勾选要发布的程序！");
+		}
+		return false;
+	});
+	$("#invalidBtn").on("click",function(){
+		var dataArray = grid.getCheckedRows();
+		var format = function(val){ return val<10?("0"+val):val;};
+		var date = new Date();
+		var _date =  date.format("yyyy-mm-dd hh:mm:ss");
+		date.setDate(date.getDate()-1); 
+		var exp_time = date.format("yyyy-mm-dd");
+		var proc_name="";
+		var updateProc = "";
+		var updateInfo  = "";
+		if(dataArray.length>0){
+			for(var i=0;i<dataArray.length;i++){
+				proc_name=dataArray[i].get("PROC_NAME");
+				updateProc = "update proc set state='PUBLISHED' ,CURDUTYER='"+_UserInfo.usercnname+"',EFF_DATE='"+_date+"' where proc_name='"+proc_name+"'" ;
+				updateInfo  = "update proc_schedule_info set EXP_TIME='"+exp_time+"' where proc_name='"+proc_name+"'" ;
+				ai.executeSQL(updateInfo,false,"");
+				ai.executeSQL(updateProc,false,"");
+			}
+			procStore.select();
+		}else{
+			alert("请先勾选要失效的程序！");
+		}
+		return false;
+	});
+	$('#refreshBtn').on("click",function(){
+		procStore.select();
+	});
+	$("a.deleteBtn").on("click",function(){
+		var _indexArray = [];
+		$(".ai-grid-body-check").each(function(index,el) {
+            if($(this).prop("checked")){
+            	_indexArray.push(index);
+            }
+        });
+        if(_indexArray.length==0){
+        	alert('没有选择任何一条数据！');
+        }else{
+        	if(confirm("确定删除?")){
+			    var in_condition=[];
+			    var transSql = " delete from transdatamap_design where transname='{}' ";
+			    var infoSql = " delete from proc_schedule_info where proc_name='{}'";
+        		for(var i=_indexArray.length-1;i>=0;i--){
+        			var r = procStore.getAt(_indexArray[i]);
+					if(r.get("STATE")=="INVALID"){
+						procStore.remove(r);
+						realTransSql = transSql.replace("{}",r.get("PROC_NAME"));
+						realInfoSql = infoSql.replace("{}",r.get("PROC_NAME"));
+						ai.executeSQL(realInfoSql,false,"");
+						ai.executeSQL(realTransSql,false,"");
+					}			
+        		}
+				procStore.commit();
+				procStore.select();
+				switchContent(searchCondi);
+   			 }
+        }
+	});
+	
+	var _checkUniq = function(arr){
+		if(arr.length!=1){
+			alert("请选取一项！");
+		}
+		return arr.length==1?true:false;
+	}
+	
+	var $el = parent.$('#panel1');
+	
+	var bindCarouselWithProc = function(tabName){
+		$el.on("push-left-"+tabName,function(){
+			curIndex = parseInt(procStore.curIndex);
+			var _index = curIndex==0?procStore.getCount()-1:curIndex-1;
+			var r = procStore.getAt(_index);
+			var _title = "程序:"+r.get('PROC_NAME').toUpperCase()+" 影响分析";
+			parent.openTableInfo(tabName,_title,r.get('PROC_NAME'),true);
+			procStore.curIndex = _index;
+		});
+		$el.on("push-right-"+tabName,function(){
+			curIndex = parseInt(procStore.curIndex);
+			var _index = curIndex==procStore.getCount()-1?0:curIndex+1;
+			var r = procStore.getAt(_index);
+			var _title = "程序:"+r.get('PROC_NAME').toUpperCase()+" 影响分析";
+			parent.openTableInfo(tabName,_title,r.get('PROC_NAME'),true);
+			procStore.curIndex = _index;
+		});
+	};
+	
+	$('a.btn_realDown').on("click",function(){
+		if(_checkUniq($('.ai-grid-body-check:checked'))){
+			var _index = $('.ai-grid-body-check:checked').attr('rowindex');
+			var r = procStore.getAt(_index);
+			procStore.curIndex = _index;
+			var _title = "程序:"+r.get('PROC_NAME')+" 影响分析";
+			parent.openTableInfo("ana-After",_title,r.get('PROC_NAME'),true);
+			//bindCarouselWithProc("ana-After");
+		}
+	});
+	
+	$('a.btn_realUp').on("click",function(){
+		if(_checkUniq($('.ai-grid-body-check:checked'))){
+			var _index = $('.ai-grid-body-check:checked').attr('rowindex');
+			var r = procStore.getAt(_index);
+			procStore.curIndex = _index;
+			var _title ="程序:"+r.get('PROC_NAME')+" 血缘分析";
+			parent.openTableInfo("ana-Before",_title,r.get('PROC_NAME'),true);
+			//bindCarouselWithProc("ana-Before");
+		}
+	});
+
+	$("#showgrid").click(function(e){
+		$("#showgrid i").addClass('active');
+		$("#showcard i").removeClass('active');
+		curDisplayType="grid";
+		$("#datagrid").show();
+		$("#tabpanel2").hide();
+	}); 
+	$("#showcard").click(function(e){
+		$("#showgrid i").removeClass('active');
+		$("#showcard i").addClass('active');
+		curDisplayType="card";
+		$("#tabpanel2").show();
+		$("#datagrid").hide();
+	});
+});
+</script>
+</head>
+
+<body class="">
+	<div class="ui-layout-north">
+		<nav class="navbar navbar-default" role="navigation"
+			style="margin-bottom: 1px">
+			<div class="container-fluid" style="padding-left: 0px">
+				<div class="collapse navbar-collapse" style="padding-left: 0px">
+					<ul class="nav navbar-nav">
+						<li><a><i class="fa fa-home"> </i> 程序列表</a></li>
+					</ul>
+					<form class="navbar-form navbar-left" role="search">
+						<div class="form-group" >
+							<select id="trigger_type_select" class="form-control formElement">
+								<option value="">触发类型</option>
+								<option value="0">时间触发</option>
+								<option value="1">事件触发</option>
+							</select>
+						</div>
+						<div class="form-group">
+							<select id="proc_state_select" class="form-control formElement">
+								<option value="">程序状态</option>
+								<option value="UNPUBLISH">待发布</option>
+								<option value="VALID">生效</option>
+								<option value="INVALID">失效</option>
+							</select>
+						</div>
+						<div class="form-group">
+							<select id="run_freq_select" class="form-control formElement">
+								<option value="">周期</option>
+								<option value="day">日</option>
+								<option value="month">月</option>
+								<option value="hour">小时</option>
+							</select>
+						</div>
+						<div class="form-group">
+							<input id="search-text" type="text" class="form-control"  style="width: 200px" placeholder="输入程序名,中文名">
+						</div>
+						<button id="search-key" type="button" class="btn btn-success btn-xs">查找</button>
+						<div class="form-group">
+						<ul class="nav navbar-nav">
+							<li>
+								<div class="btn-group">
+									<button id="insertBtn" type="button"
+										class="btn btn-primary btn-xs">增加</button>
+									<button type="button"
+										class="btn btn-primary btn-xs dropdown-toggle"
+										data-toggle="dropdown">
+										<span class="caret"></span> <span class="sr-only">ToggleDropdown</span>
+									</button>
+									<ul class="dropdown-menu" role="menu">
+										<li><a class="btn_realDown" id="openBtn">影响分析</a></li>
+										<li><a class="btn_realUp" id="anaBefore">血缘分析</a></li>
+										<li class="hide"><a class="btn_fielemap" href="#">字段映射</a></li>
+										<li class="divider hide"></li>
+										<li><a class="priBtn hide">优先级</a></li>
+										<li class="divider"></li>
+										<li><a class="deleteBtn">删除</a></li>
+										<!--
+										<li><a class="updateBtn">修改</a></li>
+                                        -->
+									</ul>
+								</div>
+							</li>
+						</ul>
+					</div>
+					<button id="publishBtn" type="button" class="btn btn-info btn-xs">发布</button>
+			        <button id="invalidBtn" type="button" class="btn btn-danger btn-xs">失效</button>
+			        <button id="refreshBtn" type="button" class="btn btn-info btn-xs">
+				    <i class="fa fa-refresh"></i>
+					</button>
+					</form>
+					<ul class="nav navbar-nav navbar-right">
+						<li><a href="#" id="showgrid"> <i
+								class="glyphicon glyphicon-th active"></i>
+						</a></li>
+						<li><a href="#" id="showcard"><i
+								class="glyphicon glyphicon-th-list"></i></a></li>
+					</ul>
+				</div>
+				<!-- /.navbar-collapse -->
+			</div>
+			<!-- /.container-fluid -->
+		</nav>
+	</div>
+	<div class="ui-layout-west" style="overflow: auto;">
+		<div id="treeview6" class="test"></div>
+	</div>
+	<div class="ui-layout-center">
+		<div id="datagrid"  style="margin-bottom: 10px;margin-right:10px"></div>
+		<div id="tabpanel2"  style="margin-bottom: 10px"></div>
+	</div>
+</body>
+</html>

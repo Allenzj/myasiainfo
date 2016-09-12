@@ -1,0 +1,537 @@
+﻿<!DOCTYPE html> 
+<html lang="zh" class="app">
+<head>
+<meta charset="utf-8" /> 
+<title>大数据开放平台</title>   
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"  />  
+<link href="../dacp-lib/bootstrap/css/bootstrap.min.css" type="text/css" rel="stylesheet" media="screen"/>
+<link href="../dacp-lib/datepicker/datepicker.css" type="text/css" rel="stylesheet" media="screen"/>
+<link href="../dacp-lib/datepicker/jquery.simpledate.css" type="text/css" rel="stylesheet" media="screen"/>
+<link href="../dacp-lib/datepicker/jquery.pst-area-control.css" type="text/css" rel="stylesheet" media="screen"/>
+<link href="../dacp-view/ve/css/dacp-ve-js-1.0.css" type="text/css" rel="stylesheet" media="screen"/>
+<link rel="stylesheet" href="implWidgets.css" type="text/css" />
+<link href="../public/css/ai.css" type="text/css" rel="stylesheet"/>
+<script src="../dacp-lib/jquery/jquery-1.10.2.min.js" type="text/javascript"></script>
+<script src="../lib/jquery.layout-latest.js" type="text/javascript"> </script>
+<script src="../dacp-lib/bootstrap/js/bootstrap.min.js"></script>
+<script src="../dacp-lib/underscore/underscore-min.js" type="text/javascript"></script>
+<script src="../dacp-lib/backbone/backbone-min.js" type="text/javascript"></script>
+<script src="../dacp-lib/highcharts/highcharts.js" type="text/javascript" ></script>
+<script src="../dacp-lib/datepicker/bootstrap-datepicker.js" type="text/javascript" ></script>
+<script src="../dacp-lib/datepicker/jquery.simpledate.js" type="text/javascript"></script>
+<script src="../dacp-lib/datepicker/jquery.pst-area-control.js" type="text/javascript"></script>
+<script src="../dacp-view/ve/js/dacp-ve-js-1.0.js" type="text/javascript" charset="utf-8"></script>
+<script src="../ve/ve-context-path.js" type="text/javascript" charset="utf-8"></script>
+<script src="../public/js/ai.core.js"></script>
+<script src="../public/js/ai.field.js"></script>
+<script src="../public/js/ai.jsonstore.js"></script>
+<script src="../public/js/ai.grid.js"></script>
+<script src="../public/js/ai.treeview.js"></script>
+<script src="../meta/metaStore.v1.js"></script>
+<style>
+body {     
+	margin: 0;
+	font-family: Roboto, arial, sans-serif;
+	font-size: 13px;
+	line-height: 20px;
+	color: #444444;
+	background-color: #f1f1f1;
+}
+ 
+.navbar-btn.btn-sm {
+	margin-top: 5px;
+	margin-bottom: 10px;
+}
+
+tr.active.table-text-visited {
+	color: #4CB6CB;
+	background-color: #000000;
+	font-weight: bold;
+}
+
+.ui-layout-north {
+	z-index: 10000 !important;
+}
+
+.ui-layout-center {
+	overflow: auto;
+}
+
+.ui-layout-toggler-west .btnCenter {
+	background: #00C;
+}
+
+.ui-layout-toggler-west .btnWest {
+	background: #090;
+}
+
+.ui-layout-toggler-west .btnBoth {
+	background: #C00; 
+}
+
+.ui-layout-resizer-west { 
+	border-width: 0 1px;
+}
+
+.ui-layout-toggler-west {
+	border-width: 0;
+}
+
+.ui-layout-toggler-west div {
+	width: 4px;
+	height: 35px; /* 3x 35 = 105 total height */
+}
+
+.ui-layout-toggler-west .btnCenter {
+	background: #00C;
+}
+
+.ui-layout-toggler-west .btnWest {
+	background: #090;
+}
+
+.ui-layout-toggler-west .btnBoth {
+	background: #C00;
+}
+</style>
+<script>
+//日期字符串（yyyy-mm-dd）转时间
+	function getDateByStr(strDate) {    
+          var date = eval('new Date(' + strDate.replace(/\d+(?=-[^-]+$)/,    
+          function (a) { return parseInt(a, 10) - 1; }).match(/\d+/g) + ')');    
+          return date;    
+      }  
+//获取相对时间字符串
+    function getRelDayStr(strDate, dayOffset)
+    {
+    	var date = getDateByStr(strDate);
+    	date.setTime(date.getTime() + dayOffset * 24*60*60*1000);
+    	return date.format("yyyy-mm-dd");
+    }
+
+var _contentStore="";
+var _totalStore="";
+var g_tvNode; //树之焦点节点
+var REFRESHTIMER;
+var curTeamCodeCondi = "";
+var agent_code="";
+var run_freq="day"; 
+var proc_schedule_flow_log = " SELECT b.flowcode AS flowcode,b.flowname AS flowname,b.topicname AS topicname,b.al_level AS level_val,b.team_code AS teme_code,b.cycletype AS run_freq,b.creater AS creater,a.date_args AS date_args,COUNT(seqno) AS total,SUM( CASE WHEN task_state = 6  THEN 1  ELSE 0  END ) AS finish,SUM( CASE  WHEN task_state = 5   THEN 1   ELSE 0  END ) AS running, SUM( CASE  WHEN task_state <= 4  AND task_state > - 4 THEN 1  ELSE 0 END ) AS queue,SUM(CASE  WHEN task_state = - 7   THEN 1   ELSE 0  END) AS unqueue, SUM(CASE  WHEN task_state > 6  THEN 1  ELSE 0  END ) AS fail FROM proc_schedule_log a, transflow b WHERE a.flowcode = b.flowcode GROUP BY flowcode,flowname,topicname,level_val,teme_code,run_freq,creater,date_args HAVING COUNT(seqno) > 0 ";
+var _treeSql ="SELECT TOPICNAME,AL_LEVEL LEVEL_VAL,COUNT(1) NUM FROM transflow b,(SELECT flowcode,date_args,run_freq FROM proc_schedule_log GROUP BY flowcode,date_args,run_freq) a WHERE a.FLOWCODE = b.flowcode {} GROUP BY TOPICNAME,AL_LEVEL HAVING(COUNT(1))>0 ";
+var _finalQuerySql="SELECT flowcode,flowname,run_freq,'' flowstatus,creater,date_args,total,  finish, running,  queue, unqueue, fail FROM ("+proc_schedule_flow_log+") a where 1=1 {} ";
+
+//流程统计
+var _totalSql = "SELECT COUNT(*) AS f_total, SUM(CASE WHEN (total=finish and total > 0) THEN 1 ELSE 0 END) AS f_success, SUM(CASE WHEN unqueue=total THEN 1 ELSE 0 END) AS f_unstart, SUM(CASE WHEN fail>0 THEN 1 ELSE 0 END) AS f_fail FROM"
+	+ " (" + proc_schedule_flow_log + ") t where 1=1 {}"; 
+
+
+var _realSql = _finalQuerySql;
+var _realTreeSql=_treeSql;
+var getQuerCondi=function(){
+	flowname = $("#flowname input").val();
+	date_query = $("#date_query input").val();
+
+	//参数比查询日期少一天
+	//date_args = getRelDayStr(date_query, -1);
+    date_args=date_query;
+	timestamp = new Date().getTime();
+	var _condi = " and  '" + timestamp + "'='" + timestamp + "'";
+	if(flowname.length>0){
+		_condi +=" AND (flowname like '%"+flowname+"%' ) " ;
+	}
+	if(run_freq=="month"){
+		_condi += date_args.length>0?(" and run_freq='month' and date_args = '"+date_args.substr(0,8)+"01'"):"";
+	}else if(run_freq=="day"){
+		_condi += date_args.length>0?(" and run_freq='day'      and date_args = '"+date_args+"'"):"";	
+	}else if(run_freq=="hour"){
+		_condi += date_args.length>0?(" and run_freq='hour'     and date_args like '"+date_args+"___'"):"";
+	}else if(run_freq=="minute"){
+		_condi += date_args.length>0?(" and run_freq='minute'     and date_args like '"+date_args+"%'"):"";
+	}
+	_condi +=curTeamCodeCondi;
+	return _condi;
+};
+var getQuerySql=function(){
+	var execSql = _realSql.replace("{}",getQuerCondi());
+	return execSql;
+};
+var _argsRender = function (value,data,index){
+	var args=data.DATE_ARGS;
+	return args;
+};
+var _timeDiffRender = function(value,data,index){
+	var end= data.END_TIME;
+	var start =data.EXEC_TIME;
+	if(start&&start.length>0&&end&&end.length>0){
+		start +=":00"; 
+		start = start.replace(/-/g,"/");
+		end  +=":00";
+		end  = end.replace(/-/g,"/");
+		var _start = new Date(start);
+		var _end = new Date(end);
+		var diff = _end.getTime()-_start.getTime();
+		//计算出相差天数
+		var days=Math.floor(diff/(24*3600*1000))
+		//计算出小时数
+		var leave1=diff%(24*3600*1000)    
+		//计算天数后剩余的毫秒数
+		var hours=Math.floor(leave1/(3600*1000))
+		//计算相差分钟数
+		var leave2=leave1%(3600*1000)      
+		//计算小时数后剩余的毫秒数
+		var minutes=Math.floor(leave2/(60*1000))
+		if(days>1){
+			hours += days*24;
+		}
+		minutes = minutes==0?1:minutes;
+		var _hours = hours<=9?"0"+hours:""+hours;
+		var _minutes=minutes<=9?"0"+minutes:""+minutes;
+		if(_minutes.length>0 && _hours.length>0){
+			return _hours+":"+_minutes;
+		}else{
+			return "--";
+		}
+	}else{
+		return "--";
+	}
+};
+var runFreqRender = function(value,data,index){
+		value=value=="minute"?"分钟":value;
+		value=value=="hour"?"小时":value;
+		value=value=="month"?"月":value;
+		value=value=="day"?"日":value;
+		return value;
+};
+
+var flowStatusRender = function(value, data, index)
+{
+
+	var ret = 0;
+	var _total = value; //总数
+	var _finish = data.FINISH; //成功
+	var _fail = data.FAIL; //失败
+	var _unqueue = data.UNQUEUE; //未触发
+
+	if(_total == _unqueue){ //0=0时也认为未触发
+		ret = 1;
+	}else if(_total == _finish){
+		ret = 2;
+	}else if(_fail > 0){
+		ret = 3;
+	}
+	
+	var st = [
+				 {'val':_unqueue,'name':'正在运行','class':'btn-warning'}
+				,{'val':_unqueue,'name':'未触发','class':'btn-default'}
+				,{'val':_finish,'name':'运行成功','class':'btn-success'}
+				,{'val':_fail,'name':'运行失败','class':'btn-danger'}
+			];
+	var _tmpl = '<div>'+
+					'<label class="btn btn-xs <%=model.class%>" name="<%=model.val%>"><%=model.name%></label>'+
+				'</div>';
+	return _.template(_tmpl,{"model":st[ret]});
+}
+
+
+var dateRender=function(value,data,index){
+	//var _dateStr = value.substring(5);
+	//return _dateStr;
+	return value;
+};
+//左边树   
+var buildTreeView = function(sql){
+		$('#treeview6').treeview({
+			color: "#428bca",
+			expandIcon: "glyphicon glyphicon-chevron-right",
+			collapseIcon: "glyphicon glyphicon-chevron-down",
+			nodeIcon: "glyphicon glyphicon-tasks",
+			showTags: true,
+			onNodeSelected:function(event,node){
+				g_tvNode = node;
+				var strArray=node.id.split(">");
+				var where="";
+				for(var i=0;i<strArray.length;i++){
+					var str =strArray[i];
+					var subWhere=str.split(":")[0]+" = '"+str.split(":")[1]+"'";
+					if(str.split(":")[1]=='未知') subWhere = str.split(":")[0] +" is null ";
+					if(where) where += " and "+ subWhere
+					else where=subWhere;
+				}
+				where = where.length>0?(" and "+where):"";
+				_contentStore.config.sql=_realSql.replace("{}",where+getQuerCondi());
+				_contentStore.fetch();
+			},
+			groupfield:"TOPICNAME,LEVEL_VAL",//SCHEMA_NAME,TABSPACE,
+			titlefield:"MODELNAME",
+			iconfield:"",
+			sql:sql,
+			dataSource:"METADBS",
+			subtype: 'grouptree' 
+		});
+};
+var switchContent = function(condi){
+	if(!condi||typeof(condi)=="undefined"){
+		condi="";
+	}
+	buildTreeView(_realTreeSql.replace("{}",condi));
+
+	_contentStore.config.sql=_realSql.replace("{}",condi);
+	_contentStore.fetch();
+
+	_totalStore.config.sql = _totalSql.replace("{}", condi);
+	_totalStore.fetch();
+};
+//统计面板
+var _totalPanel = new ve.HtmlWidget({
+	config:{
+		"className": "html",
+		"id": "view_total_up_total_id",
+		"template":'<div class="total_line row"><div class="total_run col-sm-2"><div class="total_1 ">流程运行概况</div><div class="total_2 "><%=curDate%></div></div>'
+			       + '<div class="total_detail col-sm-10">'
+			       + '<div class="detail_1"><label class="total_label_1"><%=f_successRate%>%</label><div><label class="sm-detail">运行成功率</label></div></div>'
+			       + '<div class="detail_2"><label class="total_label_2 detail_label"><%=f_total%></label><div><label class="sm-detail">流程总数</label></div></div>'
+			       + '<div class="detail_4"><label class="total_label_4 detail_label"><%=f_unStart%></label><div><label class="sm-detail">未触发</label></div></div>'
+			       + '<div class="detail_4"><label class="total_label_4 detail_label"><%=f_fail%></label><div><label class="sm-detail">运行失败</label></div></div>'
+			       + '<div class="detail_4"><label class="total_label_4 detail_label"><%=f_run%></label><div><label class="sm-detail">正在运行</label></div></div>' 
+			       + '<div class="detail_3"><label class="total_label_3 detail_label"><%=f_success%></label><div><label class="sm-detail">运行成功</label></div></div>'
+			       + '</div></div>',
+		"events":{
+			afterRender:function(){
+				var _view = this;
+				var _render = function(){
+
+			  		var curDateStr = $("#date_query input").val();
+
+					var f_total = _totalStore.models[0].get('F_TOTAL');
+					var f_success = _totalStore.models[0].get('F_SUCCESS') || 0;
+					var f_unStart = _totalStore.models[0].get('F_UNSTART') || 0;
+					var f_fail = _totalStore.models[0].get('F_FAIL')|| 0;
+					var f_run = f_total - f_success - f_unStart - f_fail;
+					f_run = (f_run < 0) ? 0 : f_run;
+
+					var f_successRate = (f_success*100/(f_total==0 ? 1 : f_total)).toFixed(2);
+
+			  		_view.$el.addClass('info-general').empty().append(
+			  		_.template(_view.config.template,{'f_successRate':f_successRate,'curDate':curDateStr,'f_total':f_total,'f_success':f_success,'f_unStart':f_unStart,'f_fail':f_fail,'f_run':f_run}));
+				};
+				_render();
+			}
+		}
+	}
+});
+//查询面板
+var _queryPanel = new ve.FormWidget({
+	config:{
+		"class":"form",
+		"formClass":"form-inline",
+		"id": "view_total_up_total_tab_nav",
+		"items": [
+			{
+				"type":"combox",
+				"fieldLabel":"周期",
+				"id":"run_freq_select",
+				"select":[{'key':'day','value':'日'},{'key':'month','value':'月'},{'key':'hour','value':'小时'},{'key':'minute','value':'分钟'}],
+				//"sql":" select rowcode k,rowname v from metaedimdef where DIMCODE = 'DIM_DATACYCLE'",
+				"style": "min-width:60px;width:68px;"
+			},
+			{
+				"type": "date",
+				"id":"date_query",
+				"fieldLabel":"批次号",
+				"placeholder":"查询批次",
+				"format" : "yyyy-mm-dd",
+				//"sql":"SELECT CURDATE() AS DEFVAL FROM metauser GROUP BY DEFVAL",
+				"style": "min-width:60px;width:80px;"
+			},
+			{
+				"type": "text",
+				"id":"flowname",
+				"fieldLabel":"",
+				"placeholder":"流程名称",
+				"style": "min-width:60px;width:150px;"
+			},
+			{
+				"id":"search",
+				"value":"查询",
+				"type":"button",
+				"className":"search_btn btn-sm btn-primary",
+			},
+			{
+				"id":"refresh-grid",
+				"value":"",
+				"type":"button",
+				"className":"search_btn btn-sm btn-primary",
+			},
+			{
+				"id":"refresh-btn",
+				"value":"",
+				"type":"button",
+				"className":"btn btn-sm btn-primary hide",
+			}
+		],
+		'events': {
+			afterRender:function(){
+				var _view = this;
+				_view.$el.find('form').addClass('form_personal');
+				_view.$el.css("padding","2px 2px 2px 20px");
+				_view.$el.find("#refresh-grid").empty().append(
+					'<div class="btn-group" data-toggle="buttons" style="margin-right: 5px;">'+
+					'<label id="m-g" class="btn btn-sm btn-info">'+
+					'<input type="radio" name="options">'+
+					'<i class="fa fa-check text-active "></i> 实时刷新</label>'+
+					'<label id="m-o" class="btn btn-sm btn-success">'+
+					'<input type="radio" name="options">'+
+					'<i class="fa fa-check text-active"></i> 手动刷新</label>'+
+					'</div>');
+				_view.$el.find("#refresh-btn button").append('<span class="glyphicon glyphicon-refresh"></span>');
+				var _refresh = function(flag){
+					if(flag){
+						REFRESHTIMER = setTimeout(function(){
+							_contentStore.fetch();
+							_totalStore.fetch();
+							_refresh(true);
+						},10000);
+					}else{
+						clearTimeout(REFRESHTIMER);
+					}
+				};
+				_view.$el.find("#m-g").on("click",function(e){
+					_view.$el.find("#refresh-btn button").addClass("hide");
+					_refresh(true);
+				});
+				_view.$el.find("#m-o").on("click",function(e){
+					_view.$el.find("#refresh-btn button").removeClass("hide");
+					flag = false;
+					_refresh(false);
+				});
+			},
+			'change #run_freq_select select':function(e){
+			    run_freq = $(e.currentTarget).val();
+			    switchContent(getQuerCondi());
+			},
+			'click #search':function(){
+				switchContent(getQuerCondi());
+			},
+			'click #refresh-btn':function(){
+				switchContent(getQuerCondi());
+			}
+		}
+	}
+
+});
+var _grid = new ve.GridWidget({
+	config:{//start-config
+		"className":"grid",
+		'showcheck': false,
+		'id':'evaluateView_tab_evaluate_middle_down_grid',
+		'pageSize':13,
+		"header":[
+			{"label":"流程名","dataIndex":"FLOWNAME","className":"ai-grid-body-td-left"},
+			{"label":"创建者","dataIndex":"CREATER","className":"ai-grid-body-td-left"},
+			{"label":"周期","dataIndex":"RUN_FREQ",renderer:runFreqRender},
+			{"label":"批次号","dataIndex":"DATE_ARGS","className":"ai-gridrunFreqRender-body-td-left",renderer:_argsRender},
+			//通过计算获得，暂时先借用total
+			{"label":"流程状态","dataIndex":"TOTAL", renderer:flowStatusRender},
+			{"label":"总任务数","dataIndex":"TOTAL"},
+			{"label":"成功","dataIndex":"FINISH"},
+			{"label":"正在执行","dataIndex":"RUNNING"},
+			{"label":"失败","dataIndex":"FAIL"},
+			{"label":"排队","dataIndex":"QUEUE"},
+			{"label":"未触发","dataIndex":"UNQUEUE"}
+		],
+		"events":{
+			afterRender:function(){
+			 this.$el.find(".table-area").css("overflow","visible");
+			},
+			rowDblClick:function(index,data,_view){
+				if(data)
+				{
+					window.open("../public/flowchar/dataFlowGraphLog.html?FLOWCODE="
+					+ data.FLOWCODE + "&DATEARGS="+data.DATE_ARGS);
+				}
+			},
+			afterTabelBodyRender:function(){
+				var _view = this;
+		
+			}
+	    }
+  }//end-config
+	
+});
+$(document).ready(function() {
+    $('body').layout({
+	    	sizable:						false
+		,	animatePaneSizing:				true
+		,	fxSpeed:						'slow'
+		,	spacing_open:					0
+		,	spacing_closed:					0
+		,	west__spacing_closed:			8
+		,	west__spacing_open:				8
+		,	west__togglerLength_closed:		105
+		,	west__togglerLength_open:		105
+		,	west__size:						205
+		,	north__size: 					100
+	});
+	_totalPanel.$el=$("#totalPanel");
+	_queryPanel.$el=$("#queryPanel");
+	_grid.$el=$("#tabpanel1");
+	var curTeamCode = paramMap['TEAM_CODE'];
+	curTeamCodeCondi = (typeof(curTeamCode)=="undefined" || curTeamCode =='' || curTeamCode == 'undefined' )?(''):("  and a.team_code = '"+curTeamCode+"' ")
+    var timestamp = new Date().getTime();
+
+    //批次号为前一天
+	var _date = getRelDayStr((new Date()).format("yyyy-mm-dd") , -1);
+
+	var _condi=" and '"+timestamp + "'='" + timestamp + "' and run_freq<>'manual' and date_args = '"+_date+"'";
+
+	_condi +=curTeamCodeCondi;
+
+//统计面板初始化
+	_totalStore = new ve.SqlStore({
+		sql:_totalSql.replace("{}",_condi),
+		dataSource:"METADBS"
+	});
+	_totalStore.on("reset",function(){
+		_totalPanel.store=_totalStore;
+		_totalPanel.store.fetched=true;
+		_totalPanel.render();
+	});
+    _totalStore.fetch();
+
+	buildTreeView(_realTreeSql.replace("{}",_condi));
+	_queryPanel.render();
+
+	//查询时间为当天
+	$("#date_query input").val((new Date()).format("yyyy-mm-dd"));
+	
+	var execSql = _realSql.replace("{}",_condi);
+	_contentStore=new ve.SqlStore({
+		sql:execSql,
+		dataSource:"METADBS"
+	});
+	_contentStore.on("reset",function(){
+		_grid.store=_contentStore;
+		_grid.store.fetched=true;
+		_grid.render();
+	});
+	_contentStore.fetch();
+
+
+	
+});
+</script>
+</head>
+<body class="">
+	<div class="ui-layout-north">
+	   <div class="row breadcrumb" id="totalPanel" style="margin:5px 1px 1px 1px;padding:6px 0px;">
+	   </div>
+	   <div  id="queryPanel"></div>
+	</div>
+	<div class="ui-layout-west" >
+		<div id="treeview6" class="test"></div>
+	</div>
+	<div class="ui-layout-center">
+		<div id="tabpanel1" style="margin-bottom: 120px;"></div>
+	</div>
+</body>
+</html>

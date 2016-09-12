@@ -1,0 +1,45 @@
+﻿<!DOCTYPE html>
+<html>
+<head> 
+<meta http-equiv="X-UA-Compatible" content="chrome=1,ie=edge"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+<link rel="stylesheet" href="../public/css/ai.css" type="text/css" />
+
+<script type="text/javascript" src="../dacp-lib/jquery/jquery-1.10.2.min.js"></script>
+<script type="text/javascript" src="../dacp-lib/bootstrap/js/bootstrap.min.js"></script>
+
+<script src="../public/js/ai.core.js"></script>
+<script src="../public/js/ai.field.js"></script>
+<script src="../public/js/ai.jsonstore.js"></script>
+<script src="../public/js/ai.grid.js"></script>
+<!--[if lt IE 9]>
+	<script src="lib/ie/html5shiv.js">
+	</script>
+	<script src="lib/ie/respond.js">
+	</script>
+	<script src="lib/ie/excanvas.js">
+	</script>
+<![endif]-->
+    
+	<script type="text/javascript" src="../lib/go.js"></script>
+	 
+ 
+	<script src="../public/js/analysis.js"></script>
+    <script>
+    $(document).ready(function() {
+    	 var OBJANME = paramMap.OBJNAME || '';
+    	 var TYPE = paramMap.TYPE||'';
+    	 $("#myDiagram").empty(); 
+    	 init(TYPE.toLowerCase(), OBJANME);
+    });
+    </script>
+</head>
+<body>
+	<div id="dataFlow" class="row">
+		<span style="display: inline-block; vertical-align: top; padding: 5px 5px 5px 5px; width: 100%">
+			<div id="myDiagram" style="margin:5px 5px 5px 5px ;background-color: Snow; height: 700px">
+			</div>
+		</span>
+	</div>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:rabbit="http://www.springframework.org/schema/rabbit"
+    xmlns:task="http://www.springframework.org/schema/task"  
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+       http://www.springframework.org/schema/beans/spring-beans.xsd 
+       http://www.springframework.org/schema/context 
+       http://www.springframework.org/schema/context/spring-context.xsd 
+       http://www.springframework.org/schema/task
+       http://www.springframework.org/schema/task/spring-task-3.0.xsd
+       http://www.springframework.org/schema/rabbit 
+       http://www.springframework.org/schema/rabbit/spring-rabbit-1.3.xsd">
+	<context:component-scan base-package="com.asiainfo.dacp.dp.*" />
+	<task:executor id="taskExecutor" pool-size="4-256" queue-capacity="1280" />  
+    <task:annotation-driven executor="taskExecutor"/> 
+	<!-- 属性文件读入 -->
+	<bean id="propertyConfigurer"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<value>classpath*:conf/*.properties</value>
+			</list>
+		</property>
+	</bean>
+	
+	<!-- 连接服务配置 -->
+	<!-- 
+	<rabbit:connection-factory id="connectionFactory"
+		host="${rabbit-host}" username="${rabbit-username}" password="${rabbit-password}"
+		port="${rabbit-port}" />
+	-->		
+	<rabbit:connection-factory id="connectionFactory" channel-cache-size="30" addresses="${rabbitmq.addresses}" 
+	  	username="${rabbitmq.username}" password="${rabbitmq.password}" />
+	<bean id="messageHandler"  
+        class="com.asiainfo.dacp.dp.mq.DpMessageHandler">  
+    </bean>
+    <task:executor id="taskExecutor" pool-size="4-256" queue-capacity="1280" />  
+	<rabbit:listener-container
+		connection-factory="connectionFactory" auto-startup="false" max-concurrency="50" concurrency="30" >
+		<rabbit:listener ref="messageHandler" method="onMessage" queue-names="${agent-code}" />
+	</rabbit:listener-container>
+
+</beans>

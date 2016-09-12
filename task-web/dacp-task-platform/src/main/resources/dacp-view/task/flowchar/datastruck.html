@@ -1,0 +1,331 @@
+﻿<!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=5,IE=9" ><![endif]-->
+<!--
+  $Id: grapheditor.html,v 1.2 2008/10/02 14:27:54 gaudenz Exp $
+  Copyright (c) 2006, Gaudenz Alder
+  
+  Graph Editor example for mxGraph. This example demonstrates using
+  mxGraph inside an ExtJs panel, and integrating tooltips, popupmenus,
+  toolbars and dialogs into mxGraph.
+-->
+<html>
+<head>
+    <title>新图形编辑器</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+ 	 <link rel="stylesheet" href="../../dacp-lib/bootstrap/css/bootstrap.min.css" type="text/css" />
+	 <link rel="stylesheet" type="text/css" href="styles/grapheditor.css">
+	  
+    <link rel="stylesheet" type="text/css" href="styles/common.css">
+    
+   <script src="../../dacp-lib/jquery/jquery-1.10.2.min.js" type="text/javascript"></script>
+	<script src="../../dacp-lib/bootstrap/js/bootstrap.min.js" type="text/javascript"></script>
+	<script src="../../public/js/ai.core.js"></script>
+	<script src="../../public/js/ai.field.js"></script>
+	<script src="../../public/js/ai.jsonstore.js"></script>
+	<script src="../../public/js/ai.grid.js"></script>
+	<script src="../../public/js/ai.funcEditer.js"></script>
+  <style>
+  	 body{
+  	 padding-top: 50px;
+  	 } 
+  	</style>
+	<!-- Sets the basepath for the library if not in same directory -->
+		<script type="text/javascript">
+		// Public global variables
+		var MAX_REQUEST_SIZE = 10485760;
+		var MAX_WIDTH = 6000;
+		var MAX_HEIGHT = 6000;
+	
+		// URLs for save and export
+		var EXPORT_URL = '/export';
+		var SAVE_URL = '/save';
+		var OPEN_URL = '/open';
+		var RESOURCES_PATH = 'resources';
+		var RESOURCE_BASE = RESOURCES_PATH + '/grapheditor';
+		var STENCIL_PATH = 'stencils';
+		var IMAGE_PATH = './images';
+		var STYLE_PATH = 'styles';
+		var CSS_PATH = 'styles';
+		var OPEN_FORM = 'open.html';
+	
+		// Specifies connection mode for touch devices (at least one should be true)
+		var tapAndHoldStartsConnection = true;
+		var showConnectorImg = true;
+
+		// Parses URL parameters. Supported parameters are:
+		// - lang=xy: Specifies the language of the user interface.
+		// - touch=1: Enables a touch-style user interface.
+		// - storage=local: Enables HTML5 local storage.
+		var urlParams = (function(url)
+		{
+			var result = new Object();
+			var idx = url.lastIndexOf('?');
+	
+			if (idx > 0)
+			{
+				var params = url.substring(idx + 1).split('&');
+				
+				for (var i = 0; i < params.length; i++)
+				{
+					idx = params[i].indexOf('=');
+					
+					if (idx > 0)
+					{
+						result[params[i].substring(0, idx)] = params[i].substring(idx + 1);
+					}
+				}
+			}
+			
+			return result;
+		})(window.location.href);
+
+		// Sets the base path, the UI language via URL param and configures the
+		// supported languages to avoid 404s. The loading of all core language
+		// resources is disabled as all required resources are in grapheditor.
+		// properties. Note that in this example the loading of two resource
+		// files (the special bundle and the default bundle) is disabled to
+		// save a GET request. This requires that all resources be present in
+		// each properties file since only one file is loaded.
+		mxLoadResources = false;
+		mxBasePath = './';
+		mxLanguage = urlParams['lang'];
+		mxLanguages = ['de'];
+	</script>
+
+	<!-- Loads and initiaizes the library -->
+<script type="text/javascript" src="mxClient.js"></script>
+<script type="text/javascript" src="js/Editor.js"></script>
+<script type="text/javascript" src="js/Graph.js"></script> 
+ 
+<script type="text/javascript">
+    var METAPRJ= "";
+    var editor,graph;
+    function update(graph) {
+			  var model = graph.getModel();
+				model.beginUpdate();
+			  try {
+				  for (var i = 0; i < 30; i++) {
+								var id = i;
+								var state = getState();
+								var cell = model.getCell(id);
+								if (cell != null) {
+									// Resets the fillcolor and the overlay
+									graph.setCellStyles(mxConstants.STYLE_FILLCOLOR, 'white', [cell]);
+									graph.removeCellOverlays(cell);
+			
+									// Changes the cell color for the known states
+									if (state == 'Running')
+									{
+										graph.setCellStyles(mxConstants.STYLE_FILLCOLOR, '#2DFF2C', [cell]);
+									}
+									else if (state == 'Waiting')
+									{
+										graph.setCellStyles(mxConstants.STYLE_FILLCOLOR, '#FFAF1B', [cell]);
+									}
+									else if (state == 'Completed')
+									{
+										graph.setCellStyles(mxConstants.STYLE_FILLCOLOR, '#FFFF10', [cell]);
+									}
+									
+									// Adds tooltip information using an overlay icon
+									if (state != 'Init')
+									{
+										// Sets the overlay for the cell in the graph
+										graph.addCellOverlay(cell, createOverlay(graph.warningImage, 'State: '+state));
+									}
+								 
+						  }
+					  }
+					}finally {
+							model.endUpdate();
+			  }
+				 
+	};
+	 
+   function createOverlay(image, tooltip) {
+			var overlay = new mxCellOverlay(image, tooltip);
+
+			// Installs a handler for clicks on the overlay
+			overlay.addListener(mxEvent.CLICK, function(sender, evt)
+			{
+				mxUtils.alert(tooltip+'\n'+'Last update: '+new Date());
+			});
+			
+			return overlay;
+	};
+		
+		/**
+		 * Creates and returns an empty graph inside the given container.
+		 */
+	function setupGraph(graph){
+		 
+			graph.setTooltips(true);
+			graph.setEnabled(false);
+			
+			// Disables folding
+			graph.isCellFoldable = function(cell, collapse)
+			{
+				return false;
+			};
+		 
+			var style = graph.getStylesheet().getDefaultVertexStyle();
+			//style[mxConstants.STYLE_STROKECOLOR] = 'black';
+			style[mxConstants.STYLE_FILLCOLOR] = 'white';
+			//style[mxConstants.STYLE_SHADOW] = true;
+ 
+			// Creates the stylesheet for the process display
+			var style = graph.getStylesheet().getDefaultVertexStyle();
+			style[mxConstants.STYLE_FONTSIZE] = '10';
+			//style[mxConstants.STYLE_FONTCOLOR] = 'black';
+			
+			style[mxConstants.STYLE_GRADIENTCOLOR] = 'white';
+			style[mxConstants.STYLE_GRADIENT_DIRECTION] = mxConstants.DIRECTION_EAST;
+			//style[mxConstants.STYLE_ROUNDED] = true;
+			//style[mxConstants.STYLE_SHADOW] = true;
+			//style[mxConstants.STYLE_FONTSTYLE] = 1;
+			 
+			style = graph.getStylesheet().getDefaultEdgeStyle();
+			style[mxConstants.STYLE_EDGE] = mxEdgeStyle.ElbowConnector;
+			//style[mxConstants.STYLE_STROKECOLOR] = 'black';
+			style[mxConstants.STYLE_ROUNDED] = true;
+							
+			style = [];
+			style[mxConstants.STYLE_SHAPE] = mxConstants.SHAPE_SWIMLANE;
+			style[mxConstants.STYLE_PERIMETER] = mxPerimeter.RectanglePerimeter;
+			style[mxConstants.STYLE_STROKECOLOR] = 'gray';
+			style[mxConstants.STYLE_FONTCOLOR] = 'black';
+			style[mxConstants.STYLE_FILLCOLOR] = '#E0E0DF';
+			style[mxConstants.STYLE_GRADIENTCOLOR] = 'white';
+			style[mxConstants.STYLE_ALIGN] = mxConstants.ALIGN_CENTER;
+			style[mxConstants.STYLE_VERTICAL_ALIGN] = mxConstants.ALIGN_TOP;
+			style[mxConstants.STYLE_STARTSIZE] = 24;
+			style[mxConstants.STYLE_FONTSIZE] = '12';
+			style[mxConstants.STYLE_FONTSTYLE] = 1;
+			style[mxConstants.STYLE_HORIZONTAL] = false;
+		//	graph.getStylesheet().putCellStyle('swimlane', style);
+			
+			style = [];
+			style[mxConstants.STYLE_SHAPE] = mxConstants.SHAPE_RHOMBUS;
+			style[mxConstants.STYLE_PERIMETER] = mxPerimeter.RhombusPerimeter;
+			style[mxConstants.STYLE_STROKECOLOR] = 'gray';
+			style[mxConstants.STYLE_FONTCOLOR] = 'gray';
+			style[mxConstants.STYLE_FILLCOLOR] = '#91BCC0';
+			style[mxConstants.STYLE_GRADIENTCOLOR] = 'white';
+			style[mxConstants.STYLE_ALIGN] = mxConstants.ALIGN_CENTER;
+			style[mxConstants.STYLE_VERTICAL_ALIGN] = mxConstants.ALIGN_MIDDLE;
+			style[mxConstants.STYLE_FONTSIZE] = '11';
+			graph.getStylesheet().putCellStyle('step', style);
+			
+			style = [];
+			style[mxConstants.STYLE_SHAPE] = mxConstants.SHAPE_ELLIPSE;
+			style[mxConstants.STYLE_PERIMETER] = mxPerimeter.EllipsePerimeter;
+			style[mxConstants.STYLE_STROKECOLOR] = 'gray';
+			style[mxConstants.STYLE_FONTCOLOR] = 'gray';
+			style[mxConstants.STYLE_FILLCOLOR] = '#A0C88F';
+			style[mxConstants.STYLE_GRADIENTCOLOR] = 'white';
+			style[mxConstants.STYLE_ALIGN] = mxConstants.ALIGN_CENTER;
+			style[mxConstants.STYLE_VERTICAL_ALIGN] = mxConstants.ALIGN_MIDDLE;
+			style[mxConstants.STYLE_FONTSIZE] = '11';
+			graph.getStylesheet().putCellStyle('start', style);
+			
+			style = mxUtils.clone(style);
+			style[mxConstants.STYLE_FILLCOLOR] = '#DACCBC';
+			//style[mxConstants.STYLE_STROKECOLOR] = '#AF7F73';
+			style[mxConstants.STYLE_STROKEWIDTH] = 3;
+			graph.getStylesheet().putCellStyle('end', style);
+			 
+		};
+		
+   ///从数据库加载流程图
+   function loadfromDatabase(FLOWCODE){
+   	  if(!FLOWCODE) FLOWCODE = paramMap.FLOWCODE;
+ 	 
+ 	  if(!METAPRJ) METAPRJ="";
+ 	  var FLOWNAME = paramMap.FLOWNAME;
+ 	  if(!METAPRJ) METAPRJ = paramMap.METAPRJ||"";
+ 	  if(METAPRJ) METAPRJ="_"+METAPRJ;
+     if(!FLOWCODE) return ;
+   
+     graphStore = new AI.JsonStore({
+			root:'root',
+			sql:"select FLOWCODE, FLOWNAME,XML,EFF_DATE,CREATER,STATE, STATE_DATE,CURDUTYER, VERSEQ  from TRANSFLOW"+METAPRJ+" where flowcode='"+FLOWCODE+"'",
+			loadDataWhenInit:true,
+			table:"TRANSFLOW"+METAPRJ,
+			key:"FLOWCODE"
+		});
+    var flowrec;	
+  
+    if(this.graphStore.getCount()==0){
+     	flowrec = this.graphStore.getNewRecord();
+    	flowrec.set('FLOWCODE',FLOWCODE);
+     	flowrec.set('FLOWNAME',FLOWNAME||"新建流程");
+  
+     	flowrec.set('EFF_DATE',new Date());
+     	flowrec.set('CREATER',_UserInfo.usercnname);
+     	flowrec.set('STATE','新建');
+     	flowrec.set('STATE_DATE',new Date());
+     	flowrec.set('CURDUTYER',_UserInfo.usercnname);
+     	flowrec.set('VERSEQ',0); 
+     	flowrec.dirty=true;
+     	graphStore.add(flowrec);
+     //ds_flow.commit();
+    }
+	 if (graphStore.getCount()!=0)
+	 {
+	 	var record = graphStore.getAt(0);
+	 	var xml =record.get("XML");
+	  
+		if (xml != null && xml.length > 0)
+		{
+			 try
+				{
+					 editor.setGraphXml(xml);
+					 
+				}
+				catch (e)
+				{
+					 
+				}
+		}
+	 }
+  };
+
+$(function(){
+			
+	     editor = new Editor(graphContainer);
+	     graph = editor.graph;
+	     setupGraph(graph);
+	     loadfromDatabase();
+		 editor.modified = false;
+		 graph.dblClick=function(evt,cell) {
+				if(!cell) return;
+		 	  currentCell=cell;
+		 	  window.open('/'+contextPath+'/meta/dataIndex.html?modelcode=datagate');
+		 	  
+ 		};
+	 
+ });
+		
+	</script>
+</head>
+<body onload="">
+	<ol class="breadcrumb navbar-fixed-top" >
+        <li class="active">数据架构目录</li>
+         
+         
+          <button id='editgraph' type="button" class="btn  btn-primary btn-xs pull-right">编辑</button>  
+ </ol>
+ 
+<div id="graphContainer" style="position:relative;overflow:hidden;width:auto;height:801px; cursor:default;">
+<script>
+	$("#editgraph").click(function(){
+	 
+		 window.open("index.html?FLOWCODE="+paramMap.FLOWCODE+"&FLOWNAME="+paramMap.FLOWNAME+"&METAPRJ="+(paramMap.METAPRJ||""));
+	});
+	 
+	
+	</script>
+</div>
+</body>
+ 
+</html>
+

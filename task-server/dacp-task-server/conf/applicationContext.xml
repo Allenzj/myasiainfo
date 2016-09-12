@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:rabbit="http://www.springframework.org/schema/rabbit" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="
+	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+	http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+	http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+	http://www.springframework.org/schema/rabbit 
+    http://www.springframework.org/schema/rabbit/spring-rabbit-1.3.xsd">
+	<!-- 打开自动扫描 -->
+	<context:component-scan base-package="com.asiainfo.dacp.*" />
+	<!-- 属性文件读入 -->
+	<bean id="propertyConfigurer"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<value>classpath*:conf/*.properties</value>
+				<value>classpath*:conf/spring/*.properties</value>
+				<value>file:conf/spring/*.properties</value>
+				<value>file:conf/*.properties</value>
+			</list>
+		</property>
+	</bean>
+	<!-- 数据源配置 -->
+	<!-- C3P0 -->
+	<!--  
+	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource"
+		destroy-method="close">
+		<property name="driverClass" value="oracle.jdbc.driver.OracleDriver"></property>
+		<property name="jdbcUrl" value="jdbc:oracle:thin:@localhost:1521:md"></property>
+		<property name="user" value="md"></property>
+		<property name="password" value="123"></property>
+		<property name="acquireIncrement" value="1"></property>
+		<property name="initialPoolSize" value="5"></property>
+		<property name="maxIdleTime" value="60"></property>
+		<property name="maxPoolSize" value="10"></property>
+		<property name="minPoolSize" value="2"></property>
+		<property name="acquireRetryDelay" value="1000"></property>
+		<property name="acquireRetryAttempts" value="0"></property>
+		<property name="breakAfterAcquireFailure" value="false"></property>
+	</bean>
+-->
+<!-- 	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" -->
+<!-- 		destroy-method="close"> -->
+<!-- 		<property name="driverClass" value="com.mysql.jdbc.Driver"></property> -->
+<!-- 		<property name="jdbcUrl" -->
+<!-- 			value="jdbc:mysql://localhost:3306/taskdb?useUnicode=true&amp;characterEncoding=UTF-8"></property> -->
+<!-- 		<property name="user" value="root"></property> -->
+<!-- 		<property name="password" value="root"></property> -->
+<!-- 		<property name="acquireIncrement" value="1"></property> -->
+<!-- 		<property name="initialPoolSize" value="5"></property> -->
+<!-- 		<property name="maxIdleTime" value="60"></property> -->
+<!-- 		<property name="maxPoolSize" value="10"></property> -->
+<!-- 		<property name="minPoolSize" value="2"></property> -->
+<!-- 		<property name="acquireRetryDelay" value="1000"></property> -->
+<!-- 		<property name="acquireRetryAttempts" value="0"></property> -->
+<!-- 		<property name="breakAfterAcquireFailure" value="false"></property> -->
+<!-- 	</bean> -->
+
+	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource"
+		destroy-method="close">
+		<property name="driverClass" value="${db.driverClass}"></property>
+		<property name="jdbcUrl" value="${db.jdbcUrl}"></property>
+		<property name="user" value="${db.user}"></property>
+		<property name="password" value="${db.password}"></property>
+		<property name="acquireIncrement" value="1"></property>
+		<property name="initialPoolSize" value="5"></property>
+		<property name="maxIdleTime" value="60"></property>
+		<property name="maxPoolSize" value="10"></property>
+		<property name="minPoolSize" value="2"></property>
+		<property name="acquireRetryDelay" value="1000"></property>
+		<property name="acquireRetryAttempts" value="0"></property>
+		<property name="breakAfterAcquireFailure" value="false"></property>
+	</bean>
+	<!-- 配置Jdbc模板 -->
+	<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+	<!-- 以注解的方式对事务进行管理 -->
+	<tx:annotation-driven transaction-manager="txManager" />
+		
+	<!-- quartz scheduler配置 -->
+	<bean id="schedulerFactory"
+		class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+		<property name="jobFactory">
+		     <bean class="com.asiainfo.dacp.dp.server.scheduler.quartz.SpringBeanJobFactory" />
+        </property>
+        <!--  
+        <property name="dataSource" ref="dataSource">  
+        </property>
+        <property name="quartzProperties">  
+            <props>  
+                <prop key="org.quartz.scheduler.instanceName">quartzScheduler</prop>  
+                <prop key="org.quartz.threadPool.class">org.quartz.simpl.SimpleThreadPool</prop>  
+                <prop key="org.quartz.threadPool.threadCount">2</prop>  
+                <prop key="org.quartz.threadPool.threadPriority">5</prop>  
+                <prop key="org.quartz.jobStore.misfireThreshold">3600000</prop>  
+                <prop key="org.quartz.jobStore.class">org.quartz.impl.jdbcjobstore.JobStoreTX</prop>  
+                <prop key="org.quartz.jobStore.driverDelegateClass">org.quartz.impl.jdbcjobstore.StdJDBCDelegate</prop>  
+                <prop key="org.quartz.jobStore.tablePrefix">qrtz_</prop>  
+            </props>  
+        </property>  
+       --> 
+	</bean>
+	<!-- 执行命令生成器 -->
+	<bean id="cmdLineBuilder" class = "com.asiainfo.dacp.dp.server.scheduler.command.ScheduleCmdLineBuilder"/>
+	<!-- dpQuartz实例 -->
+	<bean id="dpQuartz" class="com.asiainfo.dacp.dp.server.scheduler.quartz.DpQuartzManager" />
+	<!-- alarmQuartz实例 -->
+	<bean id="alarmQuartz" class="com.asiainfo.dacp.dp.server.scheduler.quartz.AlarmQuartzManager" />
+	<!-- 短信发送实例 -->
+	<bean id="smsSender" class="com.asiainfo.dacp.dp.server.scheduler.sms.SmsSenderImpl" />
+</beans>

@@ -1,0 +1,191 @@
+﻿<!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=5,IE=9" ><![endif]-->
+<!--
+  $Id: grapheditor.html,v 1.2 2008/10/02 14:27:54 gaudenz Exp $
+  Copyright (c) 2006, Gaudenz Alder
+  
+  Graph Editor example for mxGraph. This example demonstrates using
+  mxGraph inside an ExtJs panel, and integrating tooltips, popupmenus,
+  toolbars and dialogs into mxGraph.
+-->
+<html>
+<head>
+    <title>新图形编辑器</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+ 	<link rel="stylesheet" type="text/css" href="../../ext/resources/css/ext-all.css" />
+	 
+	<script type="text/javascript" src="../../ext/adapter/ext/ext-base.js"></script>
+	<script type="text/javascript" src="../../ext/ext-all.js"></script>
+	<script type="text/javascript" src="../Asiainfo.js"></script>
+  <script type="text/javascript" src="../data/AsiaInfoJsonStore.js"></script>
+  <script type="text/javascript" src="../data/dataManager.js"></script>
+  <script type="text/javascript" src="../form/searchWin4.js"></script>
+  <script type="text/javascript" src="../../meta/metaStore.js"></script>
+  <script type="text/javascript" src="../widget/ai.widget.js"></script>
+  <script type="text/javascript" src="../widget/ai.grid.js"></script>
+  <script type="text/javascript" src="../widget/ai.form.js"></script>
+   <script type="text/javascript" src="../widget/ai.pickobj.js"></script>
+	<!-- Sets the basepath for the library if not in same directory -->
+		<script type="text/javascript">
+		// Public global variables
+		var MAX_REQUEST_SIZE = 10485760;
+		var MAX_WIDTH = 6000;
+		var MAX_HEIGHT = 6000;
+	
+		// URLs for save and export
+		var EXPORT_URL = '/export';
+		var SAVE_URL = '/save';
+		var OPEN_URL = '/open';
+		var RESOURCES_PATH = 'resources';
+		var RESOURCE_BASE = RESOURCES_PATH + '/grapheditor';
+		var STENCIL_PATH = 'stencils';
+		var IMAGE_PATH = 'images';
+		var STYLE_PATH = 'styles';
+		var CSS_PATH = 'styles';
+		var OPEN_FORM = 'open.html';
+	
+		// Specifies connection mode for touch devices (at least one should be true)
+		var tapAndHoldStartsConnection = true;
+		var showConnectorImg = true;
+
+		// Parses URL parameters. Supported parameters are:
+		// - lang=xy: Specifies the language of the user interface.
+		// - touch=1: Enables a touch-style user interface.
+		// - storage=local: Enables HTML5 local storage.
+		var urlParams = (function(url)
+		{
+			var result = new Object();
+			var idx = url.lastIndexOf('?');
+	
+			if (idx > 0)
+			{
+				var params = url.substring(idx + 1).split('&');
+				
+				for (var i = 0; i < params.length; i++)
+				{
+					idx = params[i].indexOf('=');
+					
+					if (idx > 0)
+					{
+						result[params[i].substring(0, idx)] = params[i].substring(idx + 1);
+					}
+				}
+			}
+			
+			return result;
+		})(window.location.href);
+
+		// Sets the base path, the UI language via URL param and configures the
+		// supported languages to avoid 404s. The loading of all core language
+		// resources is disabled as all required resources are in grapheditor.
+		// properties. Note that in this example the loading of two resource
+		// files (the special bundle and the default bundle) is disabled to
+		// save a GET request. This requires that all resources be present in
+		// each properties file since only one file is loaded.
+		mxLoadResources = false;
+		mxBasePath = '/';
+		mxLanguage = urlParams['lang'];
+		mxLanguages = ['de'];
+	</script>
+
+	<!-- Loads and initiaizes the library -->
+	 	<script type="text/javascript" src="mxClient.js"></script>
+ 
+
+    
+    <link rel="stylesheet" type="text/css" href="styles/grapheditor.css">
+    <link rel="stylesheet" type="text/css" href="styles/common.css">
+    
+    <script type="text/javascript" src="js/schedule.js"></script>
+    <script type="text/javascript" src="js/MainPanel.js"></script>
+    <script type="text/javascript" src="js/LibraryPanel.js"></script>
+    
+   
+	<script type="text/javascript">
+		Ext.onReady(function(){
+		Ext.grid.PropertyGrid.prototype.initComponent=function() {
+    this.customEditors = this.customEditors || {};
+    this.lastEditRow = null;
+    var b = new Ext.grid.PropertyStore(this);
+    this.propStore = b;
+    var a = new Ext.grid.PropertyColumnModel(this, b);
+    this.addEvents("beforepropertychange", "propertychange");
+    this.cm = a;
+    this.ds = b.store;
+    if (this.autoSort) {
+        b.store.sort("name", "ASC");
+    }
+    Ext.grid.PropertyGrid.superclass.initComponent.call(this);
+    };	
+    Ext.override(Ext.grid.PropertyGrid, {
+        setProperty: function(property, value){
+            this.source[property] = value;
+            var r = this.store.getById(property);
+            if(r){
+                // update property
+                r.set('value', value);
+            }else{
+                // add property
+                this.store.add(new Ext.grid.PropertyRecord({name: property, value: value}, property));
+            }
+        },
+        removeProperty: function(property){
+            delete this.source[property];
+            var r = this.store.getById(property);
+            if(r){
+                // remove property
+                this.store.remove(r);
+            }
+        }
+    });	
+    Ext.grid.PropertyColumnModel.prototype.nameText = '选项';
+ 		Ext.grid.PropertyColumnModel.prototype.valueText = '值';
+    
+    // Loads the stencils into the registry
+				var req = mxUtils.load(STENCIL_PATH + '/arrows.xml');
+				
+				var root = req.getDocumentElement();
+				var shape = root.firstChild;
+				
+				while (shape != null)
+				{
+					if (shape.nodeType == mxConstants.NODETYPE_ELEMENT)
+					{
+						
+						var name = "mxgraph.arrows."+shape.getAttribute('name').replaceAll(" ","_").toLowerCase();
+						 
+					  //mxStencilRegistry.addStencil(shape.getAttribute('name'), new mxStencil(shape));
+					  
+						mxStencilRegistry.addStencil(name, new mxStencil(shape));
+					}
+					
+					shape = shape.nextSibling;
+				};
+				var req = mxUtils.load(STENCIL_PATH + '/basic.xml');
+				
+				var root = req.getDocumentElement();
+				var shape = root.firstChild;
+				
+				while (shape != null)
+				{
+					if (shape.nodeType == mxConstants.NODETYPE_ELEMENT)
+					{
+						
+						var name = "mxgraph.basic."+shape.getAttribute('name').replaceAll(" ","_").toLowerCase();
+					 // mxStencilRegistry.addStencil("mxgraph.basic."+shape.getAttribute('name'), new mxStencil(shape));
+					  //alert(name);
+						mxStencilRegistry.addStencil(name, new mxStencil(shape));
+					}
+					
+					shape = shape.nextSibling;
+				}
+    main();
+ });
+		
+	</script>
+</head>
+<body onload="">
+<div id="header"><div style="float:right;margin:5px;" class="x-small-editor"></div></div>
+</body>
+ 
+</html>
+

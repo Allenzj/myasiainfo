@@ -1,0 +1,76 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  
+  <artifactId>dacp-task-db</artifactId>
+  <version>2.0.0.beta</version>
+  <parent>
+    <groupId>com.asiainfo.dacp</groupId>
+    <artifactId>dacp-task-web-parent</artifactId>
+    <version>2.1.0</version>
+  </parent>
+  <properties>
+  	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+  
+  <build>
+	<finalName>dacp-task-db</finalName>
+		<pluginManagement>  
+	<plugins>
+		<plugin>
+			<groupId>org.flywaydb</groupId>
+			<artifactId>flyway-maven-plugin</artifactId>
+			<version>3.2.1</version>
+					<dependencies>
+						<dependency>
+							<groupId>mysql</groupId>
+							<artifactId>mysql-connector-java</artifactId>
+							<version>5.1.33</version>
+						</dependency>
+						<dependency>
+						<groupId>org.flywaydb</groupId>
+							<artifactId>flyway-core</artifactId>
+							<version>3.2.1</version>
+						</dependency>
+						<dependency>
+							<groupId>org.sonatype.plexus</groupId>
+							<artifactId>plexus-sec-dispatcher</artifactId>
+							<version>1.4</version>
+						</dependency>
+					</dependencies>
+					<configuration>
+						<driver>com.mysql.jdbc.Driver</driver>
+						<url>jdbc:mysql://localhost:3306/taskdb</url>
+						<user>root</user>
+						<password>root</password>
+						
+						<schemas>
+							<schema>taskdb</schema>
+						</schemas>
+						
+						<locations>
+							<location>filesystem:src/main/resources</location>
+							<!-- <location>filesystem:src/test/resources</location> -->
+						</locations>
+						<validateOnMigrate>false</validateOnMigrate>
+						<cleanOnValidationError>true</cleanOnValidationError>
+						<baselineOnMigrate>true</baselineOnMigrate>
+						<sqlMigrationSuffix>.sql</sqlMigrationSuffix>
+						<encoding>UTF-8</encoding>
+						<placeholderReplacement>true</placeholderReplacement>
+						<placeholderPrefix>##[[</placeholderPrefix>
+						<placeholderSuffix>]]</placeholderSuffix>
+					</configuration>
+		</plugin>
+	</plugins>
+	</pluginManagement>
+  </build>
+  		  <repositories>
+		<repository>
+			<id>nexus-dacp</id>
+			<name>Nexus AsiaInfo DACP Dept.</name>
+			<url>http://nexusserver/nexus/content/groups/public/</url>
+		</repository>
+	</repositories>	
+</project>

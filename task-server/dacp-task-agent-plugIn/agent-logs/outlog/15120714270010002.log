@@ -1,0 +1,14 @@
+创建进程[[Ljava.lang.String;@7939c87a}]失败，错误原因：[java.io.IOException: Cannot run program "sh": CreateProcess error=2, ϵͳÕҲ»µ½ָ¶
+	java.lang.ProcessBuilder.start(ProcessBuilder.java:1047)
+	com.asiainfo.dacp.dp.process.DpProcessBuilder.createProcess(DpProcessBuilder.java:45)
+	com.asiainfo.dacp.execmodel.ScheduleExeInter.runcmd(ScheduleExeInter.java:57)
+	com.asiainfo.dacp.execClass.ScheduleExe4DP.run(ScheduleExe4DP.java:17)
+	sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	java.lang.reflect.Method.invoke(Method.java:606)
+	com.asiainfo.dacp.dp.agent.DpExecutorThread.run(DpExecutorThread.java:46)
+	java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+	java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)
+	java.lang.Thread.run(Thread.java:745)
+]

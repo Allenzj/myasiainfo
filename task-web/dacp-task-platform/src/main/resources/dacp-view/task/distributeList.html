@@ -1,0 +1,419 @@
+﻿<!DOCTYPE html>
+<html lang="en" class="app">
+<head>
+    <meta charset="utf-8" />
+    <title>DACP数据云图</title>
+    <meta name="description" content="app, web app, responsive, admin dashboard, admin, flat, flat ui, ui kit, off screen nav"  />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"  />
+    <link rel="stylesheet" href="../public/css/ai.css" type="text/css"  />
+<script src="../dacp-lib/jquery/jquery-1.10.2.min.js" type="text/javascript"></script>
+<script src="../dacp-lib/bootstrap/js/bootstrap.min.js"></script>
+<script src="../public/js/ai.core.js"></script>
+<script src="../public/js/ai.field.js"></script>
+<script src="../public/js/ai.jsonstore.js"></script>
+<script src="../public/js/ai.grid.js"></script>         
+<script src="../public/js/app.plugin.js">  </script>
+        <!--[if lt IE 9]>
+            <script src="js/ie/html5shiv.js">
+            </script>
+            <script src="js/ie/respond.min.js">
+            </script>
+            <script src="js/ie/excanvas.js">
+            </script>
+        <![endif]-->
+         <script>
+$(document).ready(function(){
+
+	var operationRender = function(id){
+		//console.log(id.data.PROC_NAME);
+		//console.log(JSON.stringify(id));
+		var operationIcon = 
+			'<div>'
+			+'	<a  class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-pencil"></i></a>'
+			+'	<ul class="dropdown-menu pull-right" id="'+id.data.INTERCODE+'" >'
+			//+'		<li><a class="detail"><span class="glyphicon glyphicon-tasks" title="详细"></span></a></li>'
+			+'		<li><a class="update"><span class="glyphicon glyphicon-edit" title="编辑"></span></a></li>'
+			+'		<li><a class="delete"><span class="glyphicon glyphicon-trash" title="删除"></span></a></li>'
+			+'	</ul>'
+			+'</div>';
+			
+		return operationIcon;
+	}
+  //added by yhpan
+  var currenttranstype = '';       
+  var sql="select intercode,intername,transtype, cycletype,source_db,source_tab,target_db,topicname,state,creater,filetype,impcmdtype from data_trans_config WHERE 1=1";
+         var ds_mydata = new AI.JsonStore({
+                sql:sql,
+                filter:'proctype =1',
+                selfield:'intercode,intername,transtype',
+                key:"INTERCODE",
+				pageSize:25,
+                table:"DATA_TRANS_CONFIG"
+            });
+       
+
+         var insertData = ds_mydata.getNewRecord();
+         
+         $("#insertBtn").click(function(){
+        	 $("#upsertForm").empty();
+          	
+        	 var formcfg=({
+               id:'form',
+               store:ds_mydata,
+               containerId:'upsertForm',
+               //fieldChange:fieldChange,
+               fieldChange:function(fieldName,newVal){
+            	   insertData.set(fieldName,newVal);
+               },
+                  items:[
+                   {type:'text',label:'编号',fieldName:'INTERCODE',width:220,tip:'hello'},
+                   {type:'text',label:'名称',fieldName:'INTERNAME',width:220,tip:'hello'},
+                   //{type:'combox',label:'数据来源',fieldName:'TRANSTYPE',storesql:'db-db,db-db|db-ftp,db-ftp|ftp-db,ftp-db',width:220,value:"#8fff00"}
+                  //编号  名称 周期 分发类型 文件格式  模板脚本	
+                   {type:'combox',label:'周期',fieldName:'CYCLETYPE',storesql:'日,日|月,月|周,周|实时,实时',width:220,value:"#8fff00"},
+                   {type:'combox',label:'分发类型',fieldName:'TRANSTYPE',storesql:'FTP->FTP,FTP->FTP|FTP->数据库,FTP->数据库',width:220,value:"#8fff00"},   
+                   
+                   {type:'combox',label:'归属类型',fieldName:'TOPICNAME',storesql:'二次报表数据源,二次报表数据源|云平台分发,云平台分发|指标库指标分发,指标库指标分发|新接口云平台分发,新接口云平台分发',width:220,value:"#8fff00"},      
+                   {type:'text',label:'创建人',fieldName:'CREATER',width:220,tip:'hello'},      
+	               {type:'combox',label:'状态',fieldName:'STATE',storesql:'开发,开发|测试,测试|上线,上线|取消,取消',width:220,value:"#8fff00"},
+	                  
+                   {type:'combox',label:'文件格式',fieldName:'FILETYPE',storesql:'csv,csv|ixf,ixf',width:220,value:"#8fff00"},
+	               {type:'combox',label:'入库脚本模板',fieldName:'IMPCMPTYPE',storesql:'crmfileLoad,crmfileLoad|crmfileImport,crmfileImport|cloud-load,cloud-load',width:220,value:"#8fff00"}
+
+                 ]
+                  
+           });
+           var from = new AI.Form(formcfg);
+           $('#dialog-ok').attr("name","insert");
+        	 $('#myModal').modal({show:true});
+         }); 	   
+
+		
+		$("#deleteBtn").click(function(){
+        	 if(ds_mydata.curRecord.get('INTERCODE') == ''){
+        		 alert('请选择数据');
+        	 }else{
+        		 if(confirm("是否将此信息删除?")){
+        			 var r = ds_mydata.curRecord;
+        			 ds_mydata.remove(r);
+        			 ds_mydata.commit();
+        		 }
+        	 }
+         });	
+
+	
+        $("#dialog-ok").click(function(){
+        	// alert( ds_mydata.curRecord.get('MODELNAME'));
+        	if($('#dialog-ok').attr('name') == 'insert'){
+        		ds_mydata.add(insertData); 
+        	}
+        	var result = ds_mydata.commit();
+        	 var jsonResult=$.parseJSON(result) ;
+			
+			if(jsonResult.success){
+				ds_mydata.fireEvent("dataload");
+				$('#myModal').modal('hide');
+			 }else{
+			 alert(jsonResult.msg);
+			 }
+			 
+        }); 
+        
+        //ai.loadWidget("aigrid");
+       
+      var localcellclick=function(dataIndex, record){
+			alert(record);
+      	  
+      };
+      
+      var localBindEvent = function(){
+    	  $('a.update').each(function () {
+    			$(this).click(function(){
+    				//alert($(this).parent().parent().attr("id"));
+    				updateAction();
+        	    	
+    			});
+    		}); 
+    	  $('a.delete').each(function () {
+     			$(this).click(function(){
+     				deleteAction();
+     			});
+     		});
+      };      
+	  
+      var config={
+	   id:'datagrid',
+       region:'center',
+       store:ds_mydata,
+       pageSize:25,
+       containerId:'datagrid',
+       showcheck:false,
+       //celldblclick:cellclick,
+	   bindEvent:localBindEvent,
+       pageContainer:"mypagination",	   
+       columns:[
+
+  			  {header: '类型/主题',width: 70,sortable: true,dataIndex: 'TRANSTYPE',},
+				{header: '周期',width: 40,sortable: true,canEdit: true,dataIndex: 'CYCLETYPE'},
+				{header: '单元号',width: 80,sortable: true,dataIndex: 'INTERCODE'}, 
+				{header: '接口名称',width: 150,sortable: true,dataIndex: 'INTERNAME'}, 
+				{header: '源系统',width: 100,sortable: true,dataIndex: 'SOURCE_DB'}, 
+				{header: '目标库',width: 100,sortable: true,dataIndex: 'TARGET_DB',}, 
+				{header: '表名',width: 200,sortable: true,dataIndex: 'SOURCE_TAB',},
+				{header: '主题',width: 50,sortable: true,dataIndex: 'TOPICNAME'},
+				{header: '状态',width: 50,sortable: true,dataIndex: 'STATE'},
+				{header: '创建人',width: 60,sortable: true,dataIndex: 'CREATER'},
+			    {header: "操作", width:30,sortable:false,dataIndex:'INTERCODE',render:operationRender}            
+	 
+               ]
+				
+          } ;
+          var grid = new AI.Grid(config);
+          grid.on("gridload",function(){
+        	  $('a.update').each(function () {
+      			$(this).click(function(){
+      				//alert($(this).parent().parent().attr("id"));
+      				updateAction();
+          	    	
+      			});
+      		}); 
+        	  
+       	    $('a.delete').each(function () {
+       			$(this).click(function(){
+       				deleteAction();
+       			});
+       		});           	  
+          });
+
+		  
+          var updateAction = function(){
+        	  if(ds_mydata.curRecord.get('INTERCODE') == ''){
+           		 alert('请选择数据');
+           	 }else{
+                 $("#upsertForm").empty();
+                	
+               	 var formcfg=({
+                      id:'form',
+                      store:ds_mydata,
+                      containerId:'upsertForm',
+                      isShowData:true,
+                      //fieldChange:fieldChange,
+                      fieldChange:function(fieldName,newVal){
+                      	  //alert(fieldName);
+                      },
+                 
+                      items:[
+                      // {type:'text',label:'编号',isReadOnly:'readonly',fieldName:'INTERCODE',value:'wqs',width:220,tip:'hello',isBundData:true},
+                      {type:'text',label:'类型/主题',isReadOnly:'readonly',fieldName:'TRANSTYPE',width:220,tip:'hello'},
+                       {type:'text',label:'周期',fieldName:'CYCLETYPE',width:220,tip:'hello'},
+
+						//{type:'combox',label:'数据来源',fieldName:'TRANSTYPE',storesql:'db-db,db-db|db-ftp,db-ftp',width:220,value:"#8fff00"},
+						
+						  {type:'text',label:'单元号',fieldName:'INTERCODE',width:220,tip:'hello'},
+						  {type:'text',label:'接口名称',fieldName:'INTERNAME',width:220,tip:'hello'},
+						  {type:'text',label:'源系统',fieldName:'SOURCE_DB',width:220,tip:'hello'},
+						  
+						  {type:'text',label:'目标库',fieldName:'TARGET_DB',width:220,tip:'hello'},
+						  {type:'text',label:'表名',fieldName:'SOURCE_TAB',width:220,tip:'hello'},
+						  {type:'text',label:'主题',fieldName:'TOPICNAME',width:220,tip:'hello'},
+						  {type:'text',label:'创建人',fieldName:'CREATER',width:220,tip:'hello'}
+						                                             
+                     ]
+                  });
+                  var from = new AI.Form(formcfg);
+                  $('#dialog-ok').attr("name","update");
+               	  $('#myModal').modal({show:true});
+           	 }
+          };		  
+
+          
+          var deleteAction = function(){
+        	  if(ds_mydata.curRecord.get('INTERCODE') == ''){
+	        		 alert('请选择数据');
+        	 }else{
+        		 if(confirm("是否将此信息删除?")){
+        			 var r = ds_mydata.curRecord;
+        			 ds_mydata.remove(r);
+        			 var result = ds_mydata.commit();
+        	         var jsonResult = $.parseJSON(result);
+        	         if(jsonResult.success && jsonResult.success == false){
+	       	         	alert(jsonResult.msg);
+	       	         }　
+        		 }
+        	 }
+          };
+
+          var searchBtn = function(){
+        	  
+          	   //alert(searchBar.getWhere());
+          	   if(searchBar.getWhere() && searchBar.getWhere() == ' '){
+          		    ds_mydata.select(sql + " and transtype='"+ currenttranstype +"'"); 
+          		    ds_mydata.select(firstSql); 
+          	   }else{
+   	       		var firstSql = sql + " and transtype='"+ currenttranstype +"' and "+ searchBar.getWhere();
+   	       		//alert(firstSql);
+   				ds_mydata.select(firstSql); 
+          	   }
+   	       	
+             };          
+          
+          var insertBtn = function(){
+          	 $("#upsertForm").empty();
+            	
+         	 var formcfg=({
+ 	               id:'form',
+ 	               store:ds_mydata,
+ 	               containerId:'upsertForm',
+ 	               isShowData:false,
+ 	               //fieldChange:fieldChange,
+ 	               fieldChange:function(fieldName,newVal){
+ 	            	   insertData.set(fieldName,newVal);
+ 	               },
+ 	                  
+ 	              items:[
+ 	                    {type:'text',label:'编号',fieldName:'INTERCODE',width:220,tip:'hello'},
+ 	                    {type:'text',label:'名称',fieldName:'INTERNAME',width:220,tip:'hello'},
+ 	                    //{type:'combox',label:'数据来源',fieldName:'TRANSTYPE',storesql:'db-db,db-db|db-ftp,db-ftp|ftp-db,ftp-db',width:220,value:"#8fff00"}
+ 	                   //编号  名称 周期 分发类型 文件格式  模板脚本	
+ 	                    {type:'combox',label:'周期',fieldName:'CYCLETYPE',storesql:'日,日|月,月|周,周|实时,实时',width:220,value:"#8fff00"},
+ 	                    {type:'combox',label:'分发类型',fieldName:'TRANSTYPE',storesql:'FTP->FTP,FTP->FTP|FTP->数据库,FTP->数据库',width:220,value:"#8fff00"},   
+ 	                    
+ 	                    {type:'combox',label:'归属类型',fieldName:'TOPICNAME',storesql:'二次报表数据源,二次报表数据源|云平台分发,云平台分发|指标库指标分发,指标库指标分发|新接口云平台分发,新接口云平台分发',width:220,value:"#8fff00"},      
+ 	                    {type:'text',label:'创建人',fieldName:'CREATER',width:220,tip:'hello'},      
+ 	 	               {type:'combox',label:'状态',fieldName:'STATE',storesql:'开发,开发|测试,测试|上线,上线|取消,取消',width:220,value:"#8fff00"},
+ 	 	                  
+ 	                    {type:'combox',label:'文件格式',fieldName:'FILETYPE',storesql:'csv,csv|ixf,ixf',width:220,value:"#8fff00"},
+ 	 	               {type:'combox',label:'入库脚本模板',fieldName:'IMPCMPTYPE',storesql:'crmfileLoad,crmfileLoad|crmfileImport,crmfileImport|cloud-load,cloud-load',width:220,value:"#8fff00"}
+
+ 	                  ]
+ 	                  
+ 	           });
+ 	           var from = new AI.Form(formcfg);
+            
+             $('#dialog-ok').attr("name","insert");
+         	 $('#myModal').modal({show:true});
+           };
+          
+           var searchModel=({
+       		id:'searchBar',
+       		containerId:'searchBar',
+       		//propertyType:'searchBar',
+       		items:[
+       		       {type:'text',id:"INTERNAME",parenttype:"searchBar",width:220,fieldName:"INTERNAME",label:"接口名称",where : " INTERNAME like '%{INTERNAME}%'"},
+       		       {type:'combox',label:'周期',parenttype:"searchBar",width:120,fieldName:'CYCLETYPE',storesql:'select  CYCLETYPE as CycleKey,CYCLETYPE as CycleValue from data_trans_config where CYCLETYPE is not null group by CYCLETYPE ',where : " CYCLETYPE like '%{CYCLETYPE}%'"},
+       		       {type:'button',label:'查询',parenttype:"searchBar",fieldName:"QUERYBTN",clickfun:searchBtn},
+       		       {type:'button',label:'增加',parenttype:"searchBar",fieldName:"ADDBTN",clickfun:insertBtn}
+       		       ]
+       	    });
+        var searchBar = new AI.Toolbar(searchModel);           
+        var treeSql = "select transtype,count(1) NUM from data_trans_config where transtype is not null and transtype != '' group by transtype order by NUM desc,transtype" ;
+       	
+              var catStore=ai.getStore(treeSql).root;
+               $("#gridsumList").empty();
+               var activeClass="";
+               for(var i=0;i<catStore.length;i++){
+               	if(i==0) {
+       			activeClass=" active ";
+       			var firstSql = sql + " and transtype='"+catStore[i]["TRANSTYPE"]+"'";
+       			    currenttranstype = catStore[i]["TRANSTYPE"];
+               		ds_mydata.select(firstSql); 
+       			}
+               	else {
+       			activeClass="";
+       			}
+               	$("#gridsumList").append('<a href="#" data-topic="'+catStore[i]["TRANSTYPE"]+'" class="list-group-item'+activeClass+'"> '+(catStore[i]["TRANSTYPE"]||"其他")+'<b class="badge bg-primary pull-right"> '+catStore[i]["NUM"]+' </b> </a>');
+               };  
+                $("#gridsumList .list-group-item").click(function(){
+                	 $("#gridsumList .list-group-item").removeClass("active");
+                	 $(this).addClass("active");
+                	 
+                	 var newsql=sql+" and transtype='"+$(this).attr("data-topic")+"'";
+                	 currenttranstype = $(this).attr("data-topic");       
+                	 ds_mydata.select(newsql); 
+                	 return false;
+               });
+           }); 
+ </script> 
+    </head>
+    
+    <body >
+	
+    	<nav class="navbar navbar-default" role="navigation" style="margin-bottom:1px">
+        <div class="container-fluid">
+        	<div class="navbar-header">
+             	<a class="navbar-brand bg-light " href="#"  style="width:200px">汇总列表</a>
+			</div>	
+
+
+<!--flag-->        
+		 <form class="navbar-form navbar-left col-sm-7 m-b-xs" role="search" id="searchBar"></form>
+         <ul class="nav navbar-nav navbar-right">
+			<li>
+				<ul id="mypagination" class="nav navbar-nav pagination-letter"></ul>
+			<li>
+		</ul>
+				
+        </div><!-- /.container-fluid -->
+      
+      </nav>	
+      <section class="vbox">
+
+            <section>
+                <section class="hbox stretch">
+               
+                    <section id="content">
+                        <section class="vbox">
+                            <section >
+                                <section class="hbox stretch">
+                                    <!-- side content -->
+                                    <aside class="aside bg-light dk" id="sidebar">
+                                        <section class="vbox animated fadeInUp">
+                                            <section class="scrollable hover">
+                                                <div class="list-group no-radius no-border no-bg m-t-n-xxs m-b-none auto" id="gridsumList"></div>
+                                            </section>
+                                        </section>
+                                    </aside>
+                                    <!-- / side content -->
+                                    <section>
+                                        
+										<section class="vbox">
+                                            <section class="scrollable padder-lg" style="overflow:hidden">
+                                               
+                                                 <div class="table-responsive" id="datagrid" style="width: 100%;overflow: auto;"></div>
+												 
+                                            </section>
+                                        </section>
+                                    </section>
+                                </section>
+                            </section>
+                            
+                        </section>
+                       
+                    </section>
+                </section>
+            </section>
+        </section>
+        <!-- Bootstrap -->
+        <!-- App -->
+         
+        <div id="myModal" class="modal fade modal-lg">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <h4 class="modal-title">分发列表</h4>
+      </div>
+      <div class="modal-body" id="upsertForm">
+         
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+        <button id="dialog-ok" type="button" class="btn btn-primary">确认</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+      </div><!-- /.modal -->
+   
+    </body>
+
+</html>

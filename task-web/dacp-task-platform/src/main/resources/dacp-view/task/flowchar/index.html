@@ -1,0 +1,429 @@
+<!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=5,IE=9" ><![endif]-->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>流程图编辑</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+     <link rel="stylesheet" href="../../dacp-lib/bootstrap/css/bootstrap.min.css" type="text/css" />
+	 <link rel="stylesheet" type="text/css" href="styles/grapheditor.css">
+	  
+    <link rel="stylesheet" type="text/css" href="styles/grapheditor.css">
+   <style>
+   	 #nodeform input{
+   	   
+   	 }
+   	   
+.geSidebar .geItem:hover {
+border: 1px solid gray !important;
+}
+.geSidebar .geItem {
+display: inline-block;
+border: 1px solid white !important;
+margin: 0px solid gray !important;
+padding: 0px solid gray !important;
+background-repeat: no-repeat;
+background-position: 50% 50%;
+ 
+border-radius: 0px;
+width: 80px;
+height: 70px;
+ 
+}
+.geSidebar .geItem {
+float: left;
+/*width: 50%;
+*/
+width: 80px;
+height: 70px;
+padding: 10px;
+font-size: 10px;
+line-height: 1.4;
+text-align: center;
+background-color: #f9f9f9;
+border: 1px solid #fff;
+}
+
+ 
+.geSidebar .geItem:hover {
+color: #fff;
+background-color: #563d7c;
+}
+.bs-glyphicons .glyphicon {
+margin-top: 5px;
+margin-bottom: 10px;
+font-size: 24px;
+}
+ 
+   	</style>
+    
+	<script type="text/javascript">
+		// Public global variables
+		var MAX_REQUEST_SIZE = 10485760;
+		var MAX_WIDTH = 6000;
+		var MAX_HEIGHT = 6000;
+	
+		// URLs for save and export
+		var EXPORT_URL = '/export';
+		var SAVE_URL = '/save';
+		var OPEN_URL = '/open';
+		var RESOURCES_PATH = 'resources';
+		var RESOURCE_BASE = RESOURCES_PATH + '/grapheditor';
+		var STENCIL_PATH = 'stencils';
+		var IMAGE_PATH = 'images';
+		var STYLE_PATH = 'styles';
+		var CSS_PATH = 'styles';
+		var OPEN_FORM = 'open.html';
+	
+		// Specifies connection mode for touch devices (at least one should be true)
+		var tapAndHoldStartsConnection = true;
+		var showConnectorImg = true;
+
+		// Parses URL parameters. Supported parameters are:
+		// - lang=xy: Specifies the language of the user interface.
+		// - touch=1: Enables a touch-style user interface.
+		// - storage=local: Enables HTML5 local storage.
+		var urlParams = (function(url)
+		{
+			var result = new Object();
+			var idx = url.lastIndexOf('?');
+	
+			if (idx > 0)
+			{
+				var params = url.substring(idx + 1).split('&');
+				
+				for (var i = 0; i < params.length; i++)
+				{
+					idx = params[i].indexOf('=');
+					
+					if (idx > 0)
+					{
+						result[params[i].substring(0, idx)] = params[i].substring(idx + 1);
+					}
+				}
+			}
+			
+			return result;
+		})(window.location.href);
+
+		// Sets the base path, the UI language via URL param and configures the
+		// supported languages to avoid 404s. The loading of all core language
+		// resources is disabled as all required resources are in grapheditor.
+		// properties. Note that in this example the loading of two resource
+		// files (the special bundle and the default bundle) is disabled to
+		// save a GET request. This requires that all resources be present in
+		// each properties file since only one file is loaded.
+		mxLoadResources = false;
+		mxBasePath = './';
+		mxLanguage = urlParams['lang'];
+		mxLanguages = ['de'];
+	</script>
+	<script src="../../dacp-lib/jquery/jquery-1.10.2.min.js" type="text/javascript"></script>
+	<script src="../../dacp-lib/bootstrap/js/bootstrap.min.js" type="text/javascript"></script>
+	<script src="../../public/js/ai.core.js"></script>
+	<script src="../../public/js/ai.field.js"></script>
+	<script src="../../public/js/ai.jsonstore.js"></script>
+	<script src="../../public/js/ai.grid.js"></script>
+   
+	<script type="text/javascript" src="mxClient.js"></script>
+	<script type="text/javascript" src="js/Editor.js"></script>
+	<script type="text/javascript" src="js/Graph.js"></script>
+	<script type="text/javascript" src="js/Shapes.js"></script>
+	<script type="text/javascript" src="js/EditorUi.js"></script>
+	<script type="text/javascript" src="js/Actions.js"></script>
+	<script type="text/javascript" src="js/Menus.js"></script>
+	<script type="text/javascript" src="js/Sidebar.js"></script>
+	<script type="text/javascript" src="js/Toolbar.js"></script>
+	<script type="text/javascript" src="js/Dialogs.js"></script>
+	<script type="text/javascript" src="jscolor/jscolor.js"></script>
+   <script type="text/javascript">
+   	  var  METAPRJ = paramMap.METAPRJ||"";
+   	  var _METAPRJ= METAPRJ?"_"+METAPRJ:"";
+   	 
+   	  var FLOWCODE = paramMap.FLOWCODE;
+   	   var FLOWNAME = paramMap.FLOWNAME;
+   	  var editor;
+   	  var graph;///图形对象
+   	  var graphStore;//数据存储对象
+   	    ///从数据库加载流程图
+   function loadfromDatabase( ){
+   	   
+ 	  
+ 	  if(!METAPRJ) METAPRJ="";
+ 	 
+  
+     if(!FLOWCODE) return ;
+   
+     graphStore = new AI.JsonStore({
+			root:'root',
+			sql:"select FLOWCODE, FLOWNAME,XML,EFF_DATE,CREATER,STATE, STATE_DATE,CURDUTYER, VERSEQ  from TRANSFLOW"+_METAPRJ+" where flowcode='"+FLOWCODE+"'",
+			loadDataWhenInit:true,
+			table:"TRANSFLOW"+_METAPRJ,
+			key:"FLOWCODE"
+		});
+    var flowrec;	
+    
+    if(graphStore.getCount()==0){
+     	flowrec = graphStore.getNewRecord();
+    	flowrec.set('FLOWCODE',FLOWCODE);
+     	flowrec.set('FLOWNAME',FLOWNAME||"新建流程");
+  
+     	flowrec.set('EFF_DATE',new Date());
+     	flowrec.set('CREATER',_UserInfo.usercnname);
+     	flowrec.set('STATE','新建');
+     	flowrec.set('STATE_DATE',new Date());
+     	flowrec.set('CURDUTYER',_UserInfo.usercnname);
+     	flowrec.set('VERSEQ',0); 
+     	flowrec.dirty=true;
+     	graphStore.add(flowrec);
+     //ds_flow.commit();
+    }
+	 if (graphStore.getCount()!=0)
+	 {
+	 	var record = graphStore.getAt(0);
+	 	var xml =record.get("XML");
+	 
+		if (xml != null && xml.length > 0)
+		{
+			 try
+				{
+					 editor.setGraphXml(xml);
+					 
+				}
+				catch (e)
+				{
+					 
+				}
+		}
+	 }
+  };
+   savetoDatabase = function(xmltext){
+   	  
+ 	 var graph =  editor.graph;
+ 	 var parent = graph.getDefaultParent();
+ 	 if(!graphStore) return;
+	 if( graphStore.getCount()==0) return;
+	 var r=graphStore.getAt(0);
+	 r.set('STATE_DATE',new Date());
+     r.set('CURDUTYER',_UserInfo.usercnname);
+	 r.set("XML",xmltext);
+	 if(graphStore.commit(false)){
+	  
+	 };
+	 ///对象信息保存
+	  var ds_flowobj = new AI.JsonStore({
+			root:'root',
+			sql:"select FLOWCODE, OBJNAME, OBJTYPE, OBJCNNAME,ACTIONTYPE, REMARK  from  TRANSFLOWOBJ"+_METAPRJ+" where flowcode='"+FLOWCODE+"'",
+			loadDataWhenInit:true,
+			pageSize:-1,
+			table:"TRANSFLOWOBJ"+_METAPRJ,
+			key:"FLOWCODE"
+		});
+	   var ds_metamodel = new AI.JsonStore({
+			root:'root',
+			sql:"select MODELCODE,MODELTYPE, PARENTCODE, MODELNAME, REMARK,SEQ,URL,STATE from METAMODEL where 1=2",
+			loadDataWhenInit:true,
+			pageSize:-1,
+			table:"METAMODEL" ,
+			key:"MODELCODE"
+		});
+		
+	  if(ds_flowobj.getCount()>0){
+	  	var sql="delete from "+ds_flowobj.table+" where flowcode='"+FLOWCODE+"'";
+	  	ai.executeSQL(sql);
+	  	ds_flowobj.select();
+	  	
+	  	var sql="delete from METAMODEL where modelcode like 'BDX-DY%'";
+	  
+	  	ai.executeSQL(sql);
+	  	  
+	};
+	 
+	 var sumNode = 0;
+ 	 var childCount=graph.model.getChildCount(parent);
+ 	 
+ 	 for(var i=0;i<childCount;i++){
+ 	 	sumNode++;
+ 	 	
+ 	 	var child = graph.model.getChildAt(parent, i);
+ 	 	child.remark="level:"+i;
+ 	 	var rec = ds_flowobj.getNewRecord();
+		rec.set('FLOWCODE',FLOWCODE);
+		rec.set('OBJNAME',child.getId());
+		rec.set('OBJCNNAME',child.value);
+		rec.set('OBJTYPE',child.objType );
+		rec.set('REMARK',child.remark);
+		rec.set('ACTIONTYPE',"");
+		ds_flowobj.add(rec);
+		if(child.value &&  child.isVertex()){
+			// , PARENTCODE, MODELNAME, REMARK,SEQ,URL
+			var rec = ds_metamodel.getNewRecord();
+			 
+			rec.set('MODELCODE','BDX-DY-'+child.getId());
+			rec.set('MODELNAME',child.value);
+			rec.set('MODELTYPE',child.objType );
+			rec.set('SEQ',child.seq);
+			rec.set('PARENTCODE',"BDX");
+			rec.set('URL',child.urlpath||'/mteam/miniTabList.html');
+			rec.set('STATE',child.state||'on');
+			ds_metamodel.add(rec);
+		};
+		 
+ 	 	var c_childCount = graph.model.getChildCount(child);
+ 	 	for(var j=0;j<c_childCount;j++){
+ 	 		c_child =graph.model.getChildAt(child, j);
+ 	 		c_child.remark="level:"+i+","+j;
+ 	 		sumNode++;
+ 	 		var rec = ds_flowobj.getNewRecord();
+			rec.set('FLOWCODE',FLOWCODE);
+			rec.set('OBJNAME',c_child.getId());
+			rec.set('OBJCNNAME',c_child.value);
+ 
+			rec.set('REMARK',c_child.remark);
+			rec.set('ACTIONTYPE',child.getId());
+		
+			ds_flowobj.add(rec);
+			
+			if(c_child.value &&  c_child.isVertex()){
+			// , PARENTCODE, MODELNAME, REMARK,SEQ,URL
+			var rec = ds_metamodel.getNewRecord();
+			 
+			rec.set('MODELCODE','BDX-DY-'+child.getId()+"-"+c_child.getId());
+			rec.set('MODELNAME',c_child.value);
+		   rec.set('REMARK',c_child.remark);
+		   rec.set('MODELTYPE',c_child.objType );
+			rec.set('SEQ',c_child.seq);
+			 
+			rec.set('URL',c_child.urlpath||'/mteam/miniTabList.html');
+			rec.set('STATE',c_child.state||'on');
+			rec.set('PARENTCODE','BDX-DY-'+child.getId());
+			ds_metamodel.add(rec);
+		};
+ 	 	};
+ 	};
+  
+  
+	if(ds_flowobj.commit(false)){
+	 	alert('保存成功');
+	 };
+	 ///同步到目录结构
+	 ds_metamodel.commit();
+  }; 	
+		// Extends EditorUi to update I/O action states
+		(function()
+		{
+			var editorUiInit = EditorUi.prototype.init;
+			
+			EditorUi.prototype.init = function() {
+				editorUiInit.apply(this, arguments);
+				/*
+				this.actions.get('export').setEnabled(false);
+
+				// Updates action states which require a backend
+				if (!useLocalStorage)
+				{
+					mxUtils.post(OPEN_URL, '', mxUtils.bind(this, function(req)
+					{
+						var enabled = req.getStatus() != 404;
+						this.actions.get('open').setEnabled(enabled || fileSupport);
+						this.actions.get('import').setEnabled(enabled || fileSupport);
+						this.actions.get('save').setEnabled(enabled);
+						this.actions.get('saveAs').setEnabled(enabled);
+						this.actions.get('export').setEnabled(enabled);
+					}));
+				}
+				*/
+			};
+			EditorUi.prototype.savetoDatabase =function(xmltext){
+				savetoDatabase(xmltext);
+			};
+		})();
+		
+		$(document).ready(function(){
+ 
+	    editor = new Editor();
+	    graph = editor.graph;
+	    ui = new EditorUi(editor);
+	    graph.setTooltips(false);
+	  var currentCell=null;
+	  loadfromDatabase(); 
+	  graph.click=function(evt,cell) {
+		 
+		};
+	function showObjCfgWin(cell){
+			$("#nodeform").empty();
+         	 var formcfg=({
+                id:'form',
+                store:null,
+                containerId:'nodeform',
+                //fieldChange:fieldChange,
+                fieldChange:function(fieldName,newVal){
+                	  //alert(fieldName);
+                	  cell[fieldName]=newVal 
+			          
+                },
+                  
+                   items:[
+                    {type:'text',label:'名称',notNull:true,fieldName:'value',value:cell.value,width:220},
+                    {type:'checkbox',label:'类型',fieldName:'objType',value:cell.objType,storesql:'系统,系统|database,数据库|主题,主题|层次,层次|逻辑模型,逻辑模型|维度,维度|指标,指标|接口,接口|应用,应用|开放,开放',width:220 },
+                    {type:'combox',label:'物理位置',fieldName:'storeType',value:cell.storeType,storesql:'select dbname,cnname from metadbcfg',width:220 },
+                    {type:'text',label:'管理员',fieldName:'admin',width:220,value:cell.admin},
+                    {type:'combox',label:'纳入标准化',storesql:'on,on|off,off',fieldName:'state',width:220,value:cell.state,remark:'如果纳入标准化管理,会进行标准化检查控制和事后监控'},
+                    {type:'text',label:'jdbc地址', fieldName:'urlpath',width:320,value:cell.urlpath},
+                    {type:'text',label:'用户名', fieldName:'username',width:220,value:cell.username},
+                    {type:'text',label:'密码', fieldName:'passwrod',width:220,value:cell.passwrod},
+                   // ,{type:'combox',label:'边框',fieldName:'border',width:120,storesql:'none,1px,2px,3px,4px',value:"none"},
+                  ]
+                   
+            });
+            nodefromObj = new AI.Form(formcfg);
+	};
+	 graph.dblClick=function(evt,cell) {
+		 	  if(!cell) return;
+		 	  currentCell=cell;
+		 	  //var cell=evt.state.cell;
+		 		wnd = new mxWindow('节点信息编辑', nodewin, 120, 150, 520, 400, true, true);
+				wnd.setMaximizable(true);
+				wnd.setMinimizable(true);
+				wnd.setTitle(currentCell.value);
+				wnd.setScrollable(true);
+				wnd.setClosable(false);
+				wnd.setResizable(true);
+				showObjCfgWin(currentCell);
+			 
+				wnd.show(); 
+		};
+		$("#cancelcell").click(function(){
+			 
+			wnd.hide();
+		});
+		$("#okcell").click(function(){
+			// var newTitle=$("#inputTitle").val();
+			 //if(!newTitle) return;
+			 
+			// currentCell.setValue(newTitle);
+			var result = nodefromObj.getAllFieldValue();
+			 console.log(result);
+			 graph.refresh(currentCell);
+			 
+			 wnd.hide();
+	 
+		});
+       });
+	</script>
+</head>
+<body class="geEditor">
+	  <div id="nodewin">
+	   <div id="nodeform" class="form-horizontal" sytle="margin:30px">
+	  	 <div class="form-group">
+    			<label for="inputTitle" class="col-sm-2 control-label">标题</label>
+   				 <div class="col-sm-9">
+      				<input type="text" class="form-control input-sm" id="inputTitle" placeholder="请输入节点的标题">
+   			 </div>
+  			</div>
+	  	 
+	   </div>
+      <button id="okcell" type="button" class="btn btn-primary pull-right" style="margin-right:20px">OK</button>
+      <button id="cancelcell"  type="button" class="btn btn-primary pull-right" style="margin-right:20px">CANCLE</button>
+	 </div>
+</body>
+</html>

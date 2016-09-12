@@ -1,0 +1,267 @@
+<!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=5,IE=9" ><![endif]-->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>流程图编辑</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+     <link rel="stylesheet" type="text/css" href="../twitter3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="styles/grapheditor.css">
+   <style>
+   	 #nodeform input{
+   	   
+   	 }
+   	</style>
+    
+	<script type="text/javascript">
+		// Public global variables
+		var MAX_REQUEST_SIZE = 10485760;
+		var MAX_WIDTH = 6000;
+		var MAX_HEIGHT = 6000;
+	
+		// URLs for save and export
+		var EXPORT_URL = '/export';
+		var SAVE_URL = '/save';
+		var OPEN_URL = '/open';
+		var RESOURCES_PATH = 'resources';
+		var RESOURCE_BASE = RESOURCES_PATH + '/grapheditor';
+		var STENCIL_PATH = 'stencils';
+		var IMAGE_PATH = 'images';
+		var STYLE_PATH = 'styles';
+		var CSS_PATH = 'styles';
+		var OPEN_FORM = 'open.html';
+	
+		// Specifies connection mode for touch devices (at least one should be true)
+		var tapAndHoldStartsConnection = true;
+		var showConnectorImg = true;
+
+		// Parses URL parameters. Supported parameters are:
+		// - lang=xy: Specifies the language of the user interface.
+		// - touch=1: Enables a touch-style user interface.
+		// - storage=local: Enables HTML5 local storage.
+		var urlParams = (function(url)
+		{
+			var result = new Object();
+			var idx = url.lastIndexOf('?');
+	
+			if (idx > 0)
+			{
+				var params = url.substring(idx + 1).split('&');
+				
+				for (var i = 0; i < params.length; i++)
+				{
+					idx = params[i].indexOf('=');
+					
+					if (idx > 0)
+					{
+						result[params[i].substring(0, idx)] = params[i].substring(idx + 1);
+					}
+				}
+			}
+			
+			return result;
+		})(window.location.href);
+
+		// Sets the base path, the UI language via URL param and configures the
+		// supported languages to avoid 404s. The loading of all core language
+		// resources is disabled as all required resources are in grapheditor.
+		// properties. Note that in this example the loading of two resource
+		// files (the special bundle and the default bundle) is disabled to
+		// save a GET request. This requires that all resources be present in
+		// each properties file since only one file is loaded.
+		mxLoadResources = false;
+		mxBasePath = './';
+		mxLanguage = urlParams['lang'];
+		mxLanguages = ['de'];
+	</script>
+	<script src="../jquery-1.7.1.min.js"></script>
+	<script src="../jquery.tmpl.min.js"></script>
+	
+	<script src="../ai.core.js"></script>
+	<script src="../ai.jsonstore.js"></script>
+	<script src="../twitter3.0/js/bootstrap.min.js"></script> 
+
+   
+	<script type="text/javascript" src="mxClient.js"></script>
+	<script type="text/javascript" src="js/Editor.js"></script>
+	<script type="text/javascript" src="js/Graph.js"></script>
+	<script type="text/javascript" src="js/Shapes.js"></script>
+	<script type="text/javascript" src="js/EditorUi.js"></script>
+	<script type="text/javascript" src="js/Actions.js"></script>
+	<script type="text/javascript" src="js/Menus.js"></script>
+	<script type="text/javascript" src="js/Sidebar.js"></script>
+	<script type="text/javascript" src="js/Toolbar.js"></script>
+	<script type="text/javascript" src="js/Dialogs.js"></script>
+	<script type="text/javascript" src="jscolor/jscolor.js"></script>
+
+</head>
+<body class="geEditor">
+	<script type="text/javascript">
+		// Extends EditorUi to update I/O action states
+		(function()
+		{
+			var editorUiInit = EditorUi.prototype.init;
+			
+			EditorUi.prototype.init = function()
+			{
+				editorUiInit.apply(this, arguments);
+				/*
+				this.actions.get('export').setEnabled(false);
+
+				// Updates action states which require a backend
+				if (!useLocalStorage)
+				{
+					mxUtils.post(OPEN_URL, '', mxUtils.bind(this, function(req)
+					{
+						var enabled = req.getStatus() != 404;
+						this.actions.get('open').setEnabled(enabled || fileSupport);
+						this.actions.get('import').setEnabled(enabled || fileSupport);
+						this.actions.get('save').setEnabled(enabled);
+						this.actions.get('saveAs').setEnabled(enabled);
+						this.actions.get('export').setEnabled(enabled);
+					}));
+				}
+				*/
+			};
+		})();
+		$(document).ready(function(){
+			/*
+			ai.loadWidget("selectpicker");
+			$(".selectpicker").selectpicker({
+			   width: "120px",
+			   size:30,
+			   storesql:"select * from metauser"
+			});
+			*/
+	  var editer = new Editor();
+	  var graph = editer.graph;
+		var ui = new EditorUi(editer);
+		var currentCell=null;
+		/*var lorem = '<input type=text readonly value="不可编辑">Lorem ipsum dolor sit amet, consectetur adipisici elit, sed eiusmod tempor incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint obcaecat cupiditat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. ';
+		var content = document.createElement('div');
+		mxUtils.write(content, lorem + lorem + lorem);elt, w, h, modal, closable, onClose
+		
+		wnd = new mxWindow('Scrollable, resizable, fixed content', myform, 520, 50, 220, 200, true, true);
+		//wnd = new mxWindow('Scrollable, resizable, auto height', myform, 300, 50, 200, null, true, true);
+				wnd.setMaximizable(true);
+				wnd.setScrollable(true);
+				wnd.setResizable(true);
+				wnd.setVisible(true);
+				*/
+	  /*
+	  $(".geDiagramContainer rect").each(function () {
+    $(this).popover({
+        title: "Hi!",
+        content: "popover",
+        placement:'auto',
+        container: $("body")
+    });
+		});
+		
+		$(':not(#anything)').on('click', function (e) {
+    	$('.geDiagramContainer rect').each(function () {
+        //the 'is' for buttons that trigger popups
+        //the 'has' for icons and other elements within a button that triggers a popup
+        if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('.popover').has(e.target).length === 0) {
+            $(this).popover('hide');
+            return;
+        }
+    	});
+		});
+		*/
+	  graph.click=function(evt,cell) {
+		  	// var cell=evt.state.cell;
+		    // ui.showDialog(document.getElementById("myform"), 620, 420, false, true);
+		    // return;
+	/*
+		  	wnd = new mxWindow('节点信息编辑', myform, 220, 250, 420, 300, true, true);
+				wnd.setMaximizable(true);
+				wnd.setMinimizable(true);
+				wnd.setTitle(cell.value);
+				wnd.setScrollable(true);
+				wnd.setClosable(false);
+				wnd.setResizable(true);
+				//wnd.show(); 
+				//$("#myedit").attr("readonly",false);
+				//EditFileDialog
+				*/
+		};
+		 graph.dblClick=function(evt,cell) {
+		 	  if(!cell) return;
+		 	  currentCell=cell;
+		 	  //var cell=evt.state.cell;
+		 		wnd = new mxWindow('节点信息编辑', nodeform, 120, 150, 420, 300, true, true);
+				wnd.setMaximizable(true);
+				wnd.setMinimizable(true);
+				wnd.setTitle(currentCell.value);
+				wnd.setScrollable(true);
+				wnd.setClosable(false);
+				wnd.setResizable(true);
+			  $("#d_sumnum").val(currentCell.d_sumnum);
+			  $("#d_oknum").val(currentCell.d_oknum);
+			  $("#d_errnum").val(currentCell.d_errnum);
+			  $("#inputTitle").val(cell.value);
+				wnd.show(); 
+		};
+		$("#cancelcell").click(function(){
+			 
+			wnd.hide();
+		});
+		$("#okcell").click(function(){
+			 var newTitle=$("#inputTitle").val();
+			 //if(!newTitle) return;
+			 var d_sumnum = $("#d_sumnum").val(),d_oknum = $("#d_oknum").val(),d_errnum = $("#d_errnum").val();
+			
+			 if(!d_sumnum || !d_oknum ||d_errnum){
+			   // alert('请输入指标编码');
+			   // return false;
+			 }
+			 currentCell.d_sumnum= d_sumnum;
+			 currentCell.d_oknum= d_oknum;
+			 currentCell.d_errnum= d_errnum; 
+			 currentCell.setValue(newTitle);
+			 graph.refresh(currentCell);
+			 
+			 wnd.hide();
+	 
+		});
+ });
+	</script>
+	  <div id="nodeform" class="form-horizontal" sytle="margin:30px">
+	  	 <div class="form-group">
+    			<label for="inputTitle" class="col-sm-2 control-label">标题</label>
+   				 <div class="col-sm-9">
+      				<input type="text" class="form-control input-sm" id="inputTitle" placeholder="请输入节点的标题">
+   			 </div>
+  			</div>
+	  	 
+	    <table class="table table-striped">
+	    
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>总数kqi</th>
+            <th>成功数kqi</th>
+            <th>告警数kqi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>日</td>
+            <td><input id="d_sumnum" type="text" class="form-control input-sm" placeholder="输入关键指标编码"></td>
+            <td><input id="d_oknum" type="text" class="form-control input-sm" placeholder="输入关键指标编码"></td>
+            <td><input id="d_errnum" type="text" class="form-control input-sm" placeholder="输入关键指标编码"></td>
+          </tr>
+          <tr>
+            <td>月</td>
+            <td><input id="m_sumnum" type="text" class="form-control" placeholder="输入关键指标编码"></td>
+            <td><input id="m_oknum" type="text" class="form-control" placeholder="输入关键指标编码"></td>
+            <td><input id="m_errnum" type="text" class="form-control" placeholder="输入关键指标编码"></td>
+          </tr>
+         
+        </tbody>
+      </table>
+      <button id="okcell" type="button" class="btn btn-primary pull-right" style="margin-right:20px">OK</button>
+      <button id="cancelcell"  type="button" class="btn btn-primary pull-right" style="margin-right:20px">CANCLE</button>
+	 </div>
+</body>
+</html>

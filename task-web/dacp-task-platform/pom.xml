@@ -1,0 +1,48 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<artifactId>dacp-task-platform</artifactId>
+	<packaging>jar</packaging>
+	<name>dacp-task-platform</name>
+	<parent>
+		<groupId>com.asiainfo.dacp</groupId>
+		<artifactId>dacp-task-web-parent</artifactId>
+		<version>2.0.0</version>
+	</parent>
+	<dependencies>
+		<dependency>
+			<groupId>com.asiainfo.dacp</groupId>
+			<artifactId>dacp-jslib</artifactId>
+			<version>${dacp.util.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.asiainfo.dacp</groupId>
+			<artifactId>dacp-ve-js</artifactId>
+			<version>${dacp.ve.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.asiainfo.dacp</groupId>
+			<artifactId>dacp-task-syn</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.asiainfo.dacp</groupId>
+			<artifactId>dacp-ai-js</artifactId>
+			<version>${dacp.ve.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.asiainfo.dacp</groupId>
+			<artifactId>dacp-web</artifactId>
+			<version>${dacp.framework.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>servlet-api</artifactId>
+			<version>2.5</version>
+			<scope>provided</scope>
+		</dependency>
+	</dependencies>
+</project>

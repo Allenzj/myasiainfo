@@ -1,0 +1,800 @@
+/* Widget css */
+
+/* Chat Widget starts */
+.kpiValue{
+    border-bottom:1px solid #C6C6C6;background: #f8f8f8;
+    display: block;line-height:25px;height:50px;margin:0;overflow: hidden;
+  }
+   .kpiValue li{float: left;padding: 0;text-align: center;line-height:25px;width: 15%;}
+   .kpiValue div.count{
+      color: #000;
+      font-weight: bold;
+      font-size: 21px;
+ }
+.chats{
+	list-style-type: none;
+	margin: 0px;
+}
+
+.chats li{
+	margin-bottom: 8px;
+	padding-bottom: 8px;
+}
+
+.chats .by-me img{
+	margin-top: 5px;
+	margin-right:10px;
+	padding: 1px;
+	background:#fff;
+	border: 1px solid #ccc;
+}
+
+.chats .by-me .chat-meta{
+	font-size: 10px;
+	color: #999;
+}
+
+.chats .by-me .chat-content{
+	margin-left: 60px;
+	position: relative; 
+	background: #fff; 
+	border: 1px solid #ddd;
+	padding: 7px 10px;
+	border-radius: 5px;
+	font-size: 11px;
+}
+
+.chats .by-me .chat-content:after, .chats .by-me .chat-content:before { 
+	right: 100%; 
+	border: solid transparent; 
+	content: " "; 
+	height: 0; 
+	width: 0; 
+	position: absolute; 
+	pointer-events: none; 
+} 
+
+.chats .by-me .chat-content:after { 
+	border-color: rgba(255, 255, 255, 0); 
+	border-right-color: #fff; 
+	border-width: 10px; 
+	top: 30%; 
+	margin-top: -10px; 
+} 
+
+.chats .by-me .chat-content:before { 
+	border-color: rgba(238, 238, 238, 0); 
+	border-right-color: #ccc; 
+	border-width: 11px; 
+	top: 30%; 
+	margin-top: -11px; 
+}
+
+.chats .by-other img{
+	margin-top: 5px;
+	margin-left:10px;
+	padding: 1px;
+	background:#fff;
+	border: 1px solid #ccc;
+}
+
+.chats .by-other .chat-meta{
+	font-size: 10px;
+	color: #999;
+}
+
+.chats .by-other .chat-content{
+	margin-right: 60px;
+	position: relative; 
+	background: #fff; 
+	border: 1px solid #ddd;
+	padding: 7px 10px;
+	border-radius: 5px;
+	font-size: 11px;
+}
+
+.chats .by-other .chat-content:after, .chats .by-other .chat-content:before { 
+	left: 100%; 
+	border: solid transparent; 
+	content: " "; 
+	height: 0; 
+	width: 0; 
+	position: absolute; 
+	pointer-events: none; 
+} 
+
+.chats .by-other .chat-content:after { 
+	border-color: rgba(255, 255, 255, 0); 
+	border-left-color: #fff; 
+	border-width: 10px; 
+	top: 30%; 
+	margin-top: -10px; 
+} 
+
+.chats .by-other .chat-content:before { 
+	border-color: rgba(238, 238, 238, 0); 
+	border-left-color: #ccc; 
+	border-width: 11px; 
+	top: 30%; 
+	margin-top: -11px; 
+}
+
+/* Chat widget ends */
+
+
+/* Recent posts & Comments widgets starts */
+
+
+.recent-content .btn{
+	font-size: 10px !important;
+	margin-top: 5px;
+}
+
+.recent-meta{
+	font-size: 10px;
+	color: #999;
+}
+
+.recent {
+	list-style-type: none;
+	margin: 0px;
+	font-size: 11px;
+	line-height: 16px;
+}
+
+.recent img{
+	margin-top: 5px;
+	margin-right:10px;
+	padding: 1px;
+	background:#fff;
+	border: 1px solid #ccc;
+}
+
+.recent li{
+	margin-bottom: 8px;
+	padding-bottom: 8px;
+	border-bottom: 1px solid #eee;
+}
+
+/* Recent posts and comments widget ends */
+
+/* File upload widget starts */
+
+.file-upload{
+	list-style-type: none;
+	margin: 0px;
+	padding:0px;
+}
+
+.file-upload li{
+	padding:5px 10px;
+  background-color: #fafafa;
+  background: -webkit-gradient(linear, left top, left bottom, from(#fafafa), to(#f6f6f6));
+  background: -webkit-linear-gradient(top, #fafafa, #f6f6f6);
+  background: -moz-linear-gradient(top, #fafafa, #f6f6f6);
+  background: -ms-linear-gradient(top, #fafafa, #f6f6f6);
+  background: -o-linear-gradient(top, #fafafa, #f6f6f6);
+  background: linear-gradient(top, #fafafa, #f6f6f6);	
+  border-top: 1px solid #ccc;
+}
+
+.file-upload li:first-child{
+	border-top: 0px;
+}
+
+.file-upload li:hover{
+	background: #f0f0f0;
+}
+
+.file-upload .file-meta{
+	font-size: 11px;
+}
+
+.file-upload .progress{
+	margin: 5px 0px !important;
+}
+
+/* File upload widget ends */
+
+
+/* Tasks starts */
+
+.task{
+	list-style-type: none;
+	margin: 0px;
+	padding:0px;
+}
+
+.task li{
+	padding:10px 10px;
+  background-color: #fafafa;
+  background: -webkit-gradient(linear, left top, left bottom, from(#fafafa), to(#f6f6f6));
+  background: -webkit-linear-gradient(top, #fafafa, #f6f6f6);
+  background: -moz-linear-gradient(top, #fafafa, #f6f6f6);
+  background: -ms-linear-gradient(top, #fafafa, #f6f6f6);
+  background: -o-linear-gradient(top, #fafafa, #f6f6f6);
+  background: linear-gradient(top, #fafafa, #f6f6f6);	
+  border-top: 1px solid #ccc;
+}
+
+.task li:first-child{
+	border-top: 0px;
+}
+
+.task li:hover{
+	background: #f0f0f0;
+}
+
+.task i{
+	width: 17px;
+	height: 17px;
+	background: #ccc;
+	text-align: center;
+	border-radius: 50px;
+	font-size: 10px;
+	line-height: 17px;
+}
+
+.task .label{
+	margin-left: 5px;
+}
+
+.task a{
+	color: #999;
+}
+
+/* Tasks ends */
+
+/* Referrer - OS and Browser */
+
+.referrer img{
+	max-width: 20px;
+	width: 20px;
+	display: block;
+	margin: 0 auto;
+}
+
+/* Referrer ends */
+
+/* Latest news */
+
+.latest-news{
+	margin: 0px;
+	padding: 0px;
+	list-style-type: none;
+}
+
+.latest-news li{
+	border-bottom: 1px solid #ddd;
+	padding-bottom: 5px;
+	margin-bottom: 5px;
+}
+
+.latest-news li:last-child{
+	border-bottom: 0px;
+	margin-bottom: 0px;
+	padding-bottom: 0px;
+}
+
+.latest-news h6{
+	line-height: 13px;
+}
+
+.latest-news h6 span{
+	font-weight: normal;
+	font-size: 11px;
+	color: #666;
+}
+
+/* Quick post */
+
+.quick-post{
+	margin-top: 20px;
+}
+
+/* Project starts */
+
+.project{
+	list-style-type: none;
+	margin: 0px;
+	padding:0px;
+}
+
+.project li{
+	padding:10px 10px;
+  background-color: #fafafa;
+  background: -webkit-gradient(linear, left top, left bottom, from(#fafafa), to(#f6f6f6));
+  background: -webkit-linear-gradient(top, #fafafa, #f6f6f6);
+  background: -moz-linear-gradient(top, #fafafa, #f6f6f6);
+  background: -ms-linear-gradient(top, #fafafa, #f6f6f6);
+  background: -o-linear-gradient(top, #fafafa, #f6f6f6);
+  background: linear-gradient(top, #fafafa, #f6f6f6);	
+  border-top: 1px solid #ccc;
+}
+
+.project li:first-child{
+	border-top: 0px;
+}
+
+.project li:hover{
+	background: #f0f0f0;
+}
+
+.project p{
+	font-weight: bold;
+	margin: 0px !important;
+	padding: 0px !important
+}
+
+.project .p-meta{
+	font-size: 11px;
+	font-weight: normal;
+	margin-left: 26px !important;
+	margin-bottom: 5px !important;
+}
+
+.project .progress{
+	margin:0px !important;
+	padding: 0px !important;
+	margin-left: 26px !important;
+}
+
+/* Proejct ends */
+
+/* Recent Activity starts */
+
+.activity{
+	list-style-type: none;
+	margin: 0px;
+	padding:0px;
+}
+
+.activity li{
+	padding:8px 10px;
+  background-color: #fafafa;
+  background: -webkit-gradient(linear, left top, left bottom, from(#fafafa), to(#f6f6f6));
+  background: -webkit-linear-gradient(top, #fafafa, #f6f6f6);
+  background: -moz-linear-gradient(top, #fafafa, #f6f6f6);
+  background: -ms-linear-gradient(top, #fafafa, #f6f6f6);
+  background: -o-linear-gradient(top, #fafafa, #f6f6f6);
+  background: linear-gradient(top, #fafafa, #f6f6f6);	
+  border-top: 1px solid #ccc;
+}
+
+.activity li:first-child{
+	border-top: 0px;
+}
+
+.activity li:hover{
+	background: #f0f0f0;
+}
+
+.activity i{
+	margin-right: 5px;
+}
+
+/* Recent activity ends */
+
+/* Google maps */
+
+.gmap iframe{
+	width: 100%;
+	margin: 0px;
+	padding: 0px;
+}
+
+/* Google maps ends */
+
+/* Users starts */
+
+.user img{
+	max-width: 100px;
+	border: 1px solid #aaa;
+	padding: 1px;
+	background: #fff;
+	margin-top: 5px;
+}
+
+.user .user-pic{
+	float: left;
+	width: 110px;
+}
+
+.user .user-details{
+	margin-left: 115px;
+}
+
+/* Users ends */
+
+/*bootstraip fixed */
+
+@-webkit-keyframes progress-bar-stripes {
+  from {
+    background-position: 40px 0;
+  }
+  to {
+    background-position: 0 0;
+  }
+}
+
+@-moz-keyframes progress-bar-stripes {
+  from {
+    background-position: 40px 0;
+  }
+  to {
+    background-position: 0 0;
+  }
+}
+
+@-o-keyframes progress-bar-stripes {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 40px 0;
+  }
+}
+
+@keyframes progress-bar-stripes {
+  from {
+    background-position: 40px 0;
+  }
+  to {
+    background-position: 0 0;
+  }
+}
+
+.progress {
+  height: 20px;
+  margin-bottom: 20px;
+  overflow: hidden;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  -webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+          box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.progress-bar {
+  float: left;
+  width: 0;
+  height: 100%;
+  font-size: 12px;
+  line-height: 20px;
+  color: #ffffff;
+  text-align: center;
+  background-color: #428bca;
+  -webkit-box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+          box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+  -webkit-transition: width 0.6s ease;
+          transition: width 0.6s ease;
+}
+
+.progress-striped .progress-bar {
+  background-image: -webkit-gradient(linear, 0 100%, 100% 0, color-stop(0.25, rgba(255, 255, 255, 0.15)), color-stop(0.25, transparent), color-stop(0.5, transparent), color-stop(0.5, rgba(255, 255, 255, 0.15)), color-stop(0.75, rgba(255, 255, 255, 0.15)), color-stop(0.75, transparent), to(transparent));
+  background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+  background-image: -moz-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+  background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+  background-size: 40px 40px;
+}
+
+.progress.active .progress-bar {
+  -webkit-animation: progress-bar-stripes 2s linear infinite;
+          animation: progress-bar-stripes 2s linear infinite;
+}
+
+.progress-bar-success {
+  background-color: #5cb85c;
+}
+
+.progress-striped .progress-bar-success {
+  background-image: -webkit-gradient(linear, 0 100%, 100% 0, color-stop(0.25, rgba(255, 255, 255, 0.15)), color-stop(0.25, transparent), color-stop(0.5, transparent), color-stop(0.5, rgba(255, 255, 255, 0.15)), color-stop(0.75, rgba(255, 255, 255, 0.15)), color-stop(0.75, transparent), to(transparent));
+  background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+  background-image: -moz-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+  background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+}
+
+.progress-bar-info {
+  background-color: #5bc0de;
+}
+
+.progress-striped .progress-bar-info {
+  background-image: -webkit-gradient(linear, 0 100%, 100% 0, color-stop(0.25, rgba(255, 255, 255, 0.15)), color-stop(0.25, transparent), color-stop(0.5, transparent), color-stop(0.5, rgba(255, 255, 255, 0.15)), color-stop(0.75, rgba(255, 255, 255, 0.15)), color-stop(0.75, transparent), to(transparent));
+  background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+  background-image: -moz-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+  background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+}
+
+.progress-bar-warning {
+  background-color: #f0ad4e;
+}
+
+.progress-striped .progress-bar-warning {
+  background-image: -webkit-gradient(linear, 0 100%, 100% 0, color-stop(0.25, rgba(255, 255, 255, 0.15)), color-stop(0.25, transparent), color-stop(0.5, transparent), color-stop(0.5, rgba(255, 255, 255, 0.15)), color-stop(0.75, rgba(255, 255, 255, 0.15)), color-stop(0.75, transparent), to(transparent));
+  background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+  background-image: -moz-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+  background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+}
+
+.progress-bar-danger {
+  background-color: #d9534f;
+}
+
+.progress-striped .progress-bar-danger {
+  background-image: -webkit-gradient(linear, 0 100%, 100% 0, color-stop(0.25, rgba(255, 255, 255, 0.15)), color-stop(0.25, transparent), color-stop(0.5, transparent), color-stop(0.5, rgba(255, 255, 255, 0.15)), color-stop(0.75, rgba(255, 255, 255, 0.15)), color-stop(0.75, transparent), to(transparent));
+  background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+  background-image: -moz-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+  background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+}
+
+#feed {
+	background:#e9ebec;
+	top:0;
+	right:0;
+	position:absolute;
+	height:100%;
+	border-left:1px solid #dbdee0;
+	overflow:auto;
+	font-size:12px;
+}
+#feed table{
+font-size: 12px
+}
+#feed h3 {
+	background:#dbdee0;
+	 
+	margin:0 -15px 10px -15px
+}
+#feed h3 a.fa {
+	float:right;
+	color:#b2b8bd;
+	text-decoration:none;
+	cursor:pointer
+}
+#feed h3 a:hover {
+	color:#34383c
+}
+#feed ul#filter {
+	margin:0 0 10px -0px;
+	list-style:none;
+	*zoom:1
+}
+#feed ul#filter:before,#feed ul#filter:after {
+	display:table;
+	content:"";
+	line-height:0
+}
+#feed ul#filter:after {
+	clear:both
+}
+#feed ul#filter li {
+	float:left;
+	margin-right:20px;
+	cursor:pointer
+}
+#feed ul#filter li a {
+	text-decoration:none
+}
+#feed ul#filter li a.active {
+	font-weight:bold
+}
+#feed ul#filter li a:hover {
+	color:inherit
+}
+#feed ul#timeline {
+	margin:0 0 0 10px;
+	list-style:none;
+	border-left:1px solid #dbdee0
+}
+#feed ul#timeline li {
+	position:relative;
+	margin:0 0 20px 20px;
+	font-size:12px
+}
+#feed ul#timeline li i {
+	position:absolute;
+	top:-4px;
+	left:-36px;
+	background:#e9ebec;
+	padding:5px 0;
+	font-size:15px;
+	width:30px;
+	text-align:center
+}
+#feed ul#timeline li.tasks i {
+	color:#bdea74
+}
+#feed ul#timeline li.comments i {
+	color:#ff5454
+}
+#feed ul#timeline li.messages i {
+	color:#36a9e1
+}
+#feed ul#timeline li .title {
+	font-weight:bold
+}
+#feed ul#timeline li .desc {
+	margin:5px 0
+}
+#feed ul#timeline li .date,#feed ul#timeline li .separator,#feed ul#timeline li .name {
+	color:#b2b8bd
+}
+#feed ul#timeline li .separator {
+	margin:0 5px
+}
+#feed #load-more {
+	color:#dbdee0;
+	margin:0 auto;
+	display:block;
+	text-align:center;
+	text-decoration:none
+}
+#feed #load-more:hover {
+	color:#34383c
+}
+[class^="icon-"],
+[class*=" icon-"] {
+  font-family: FontAwesome;
+  font-weight: normal;
+  font-style: normal;
+  text-decoration: inherit;
+  display: inline;
+  width: auto;
+  height: auto;
+  line-height: normal;
+  vertical-align: baseline;
+  background-image: none !important;
+  background-position: 0% 0%;
+  background-repeat: repeat;
+}
+[class^="icon-"]:before,
+[class*=" icon-"]:before {
+  text-decoration: inherit;
+  display: inline-block;
+  speak: none;
+}
+/* makes sure icons active on rollover in links */
+a [class^="icon-"],
+a [class*=" icon-"] {
+  display: inline-block;
+}
+/* makes the font 33% larger relative to the icon container */
+.icon-large:before {
+  vertical-align: -10%;
+  font-size: 1.3333333333333333em;
+}
+.btn [class^="icon-"],
+.nav [class^="icon-"],
+.btn [class*=" icon-"],
+.nav [class*=" icon-"] {
+  display: inline;
+  /* keeps button heights with and without icons the same */
+
+  line-height: .6em;
+}
+.btn [class^="icon-"].icon-spin,
+.nav [class^="icon-"].icon-spin,
+.btn [class*=" icon-"].icon-spin,
+.nav [class*=" icon-"].icon-spin {
+  display: inline-block;
+}
+li [class^="icon-"],
+li [class*=" icon-"] {
+  display: inline-block;
+  width: 1.25em;
+  text-align: center;
+}
+li [class^="icon-"].icon-large,
+li [class*=" icon-"].icon-large {
+  /* increased font size for icon-large */
+
+  width: 1.5625em;
+}
+ul.icons {
+  list-style-type: none;
+  text-indent: -0.75em;
+}
+ul.icons li [class^="icon-"],
+ul.icons li [class*=" icon-"] {
+  width: .75em;
+}
+.icon-muted {
+  color: #eeeeee;
+}
+.icon-border {
+  border: solid 1px #eeeeee;
+  padding: .2em .25em .15em;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  border-radius: 3px;
+}
+.icon-2x {
+  font-size: 2em;
+}
+.icon-2x.icon-border {
+  border-width: 2px;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  border-radius: 4px;
+}
+.icon-3x {
+  font-size: 3em;
+}
+.icon-3x.icon-border {
+  border-width: 3px;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  border-radius: 5px;
+}
+.icon-4x {
+  font-size: 4em;
+}
+.icon-4x.icon-border {
+  border-width: 4px;
+  -webkit-border-radius: 6px;
+  -moz-border-radius: 6px;
+  border-radius: 6px;
+}
+.pull-right {
+  float: right;
+}
+.pull-left {
+  float: left;
+}
+[class^="icon-"].pull-left,
+[class*=" icon-"].pull-left {
+  margin-right: .35em;
+}
+[class^="icon-"].pull-right,
+[class*=" icon-"].pull-right {
+  margin-left: .35em;
+}
+.btn [class^="icon-"].pull-left.icon-2x,
+.btn [class*=" icon-"].pull-left.icon-2x,
+.btn [class^="icon-"].pull-right.icon-2x,
+.btn [class*=" icon-"].pull-right.icon-2x {
+  margin-top: .35em;
+}
+.btn [class^="icon-"].icon-spin.icon-large,
+.btn [class*=" icon-"].icon-spin.icon-large {
+  height: .75em;
+}
+.btn.btn-small [class^="icon-"].pull-left.icon-2x,
+.btn.btn-small [class*=" icon-"].pull-left.icon-2x,
+.btn.btn-small [class^="icon-"].pull-right.icon-2x,
+.btn.btn-small [class*=" icon-"].pull-right.icon-2x {
+  margin-top: .45em;
+}
+.btn.btn-large [class^="icon-"].pull-left.icon-2x,
+.btn.btn-large [class*=" icon-"].pull-left.icon-2x,
+.btn.btn-large [class^="icon-"].pull-right.icon-2x,
+.btn.btn-large [class*=" icon-"].pull-right.icon-2x {
+  margin-top: .2em;
+}
+.icon-spin {
+  display: inline-block;
+  -moz-animation: spin 2s infinite linear;
+  -o-animation: spin 2s infinite linear;
+  -webkit-animation: spin 2s infinite linear;
+  animation: spin 2s infinite linear;
+}
+@-moz-keyframes spin {
+  0% { -moz-transform: rotate(0deg); }
+  100% { -moz-transform: rotate(359deg); }
+}
+@-webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(359deg); }
+}
+@-o-keyframes spin {
+  0% { -o-transform: rotate(0deg); }
+  100% { -o-transform: rotate(359deg); }
+}
+@-ms-keyframes spin {
+  0% { -ms-transform: rotate(0deg); }
+  100% { -ms-transform: rotate(359deg); }
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(359deg); }
+}
+

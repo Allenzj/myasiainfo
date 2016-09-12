@@ -1,0 +1,1316 @@
+<!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=5,IE=9" ><![endif]-->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>流程图监控</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link rel="stylesheet" href="../../dacp-lib/bootstrap/css/bootstrap.min.css" type="text/css" />
+    <link href="../css/ai.css" type="text/css" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="styles/grapheditor.css">
+
+	<link href="../../dacp-lib/datepicker/datepicker.css" type="text/css" rel="stylesheet" media="screen"/>
+	<link href="../../dacp-lib/datepicker/jquery.simpledate.css" type="text/css" rel="stylesheet" media="screen"/>
+	<link href="../../dacp-lib/datepicker/jquery.pst-area-control.css" type="text/css" rel="stylesheet" media="screen"/>
+	<link href="../../dacp-view/ve/css/dacp-ve-js-1.0.css" type="text/css" rel="stylesheet" media="screen"/>
+	<link rel="stylesheet" href="../../public/css/ai.css" type="text/css" />
+	<link rel="stylesheet" href="../../task/implWidgets.css" type="text/css" />
+
+	<style type="text/css">
+		body div.mxPopupMenu {
+			-webkit-box-shadow: 3px 3px 6px #C0C0C0;
+			-moz-box-shadow: 3px 3px 6px #C0C0C0;
+			box-shadow: 3px 3px 6px #C0C0C0;
+			background: white;
+			position: absolute;
+			border: 3px solid #e7e7e7;
+			padding: 3px;
+		}
+		body table.mxPopupMenu {
+			border-collapse: collapse;
+			margin: 0px;
+		}
+		body tr.mxPopupMenuItem {
+			color: black;
+			cursor: default;
+		}
+		body td.mxPopupMenuItem {
+			padding: 6px 60px 6px 30px;
+			font-family: Arial;
+			font-size: 10pt;
+		}
+		body td.mxPopupMenuIcon {
+			background-color: white;
+			padding: 0px;
+		}
+		body tr.mxPopupMenuItemHover {
+			background-color: #eeeeee;
+			color: black;
+		}
+		table.mxPopupMenu hr {
+			border-top: solid 1px #cccccc;
+		}
+		table.mxPopupMenu tr {
+			font-size: 4pt;
+		}
+		
+		body td.mxPopupMenuItem:hover {
+			cursor:pointer;
+			//color:red;
+			background-color: #adf;
+		}
+				
+	</style>
+
+    
+	<script type="text/javascript">
+		// Public global variables
+		var MAX_REQUEST_SIZE = 10485760;
+		var MAX_WIDTH = 6000;
+		var MAX_HEIGHT = 6000;
+	
+		// URLs for save and export
+		var EXPORT_URL = '/export';
+		var SAVE_URL = '/save';
+		var OPEN_URL = '/open';
+		var RESOURCES_PATH = 'resources';
+		var RESOURCE_BASE = RESOURCES_PATH + '/grapheditor';
+		var STENCIL_PATH = 'stencils';
+		var IMAGE_PATH = 'images';
+		var STYLE_PATH = 'styles';
+		var CSS_PATH = 'styles';
+		var OPEN_FORM = 'open.html';
+	
+		// Specifies connection mode for touch devices (at least one should be true)
+		var tapAndHoldStartsConnection = true;
+		var showConnectorImg = true;
+
+		// Parses URL parameters. Supported parameters are:
+		// - lang=xy: Specifies the language of the user interface.
+		// - touch=1: Enables a touch-style user interface.
+		// - storage=local: Enables HTML5 local storage.
+		var urlParams = (function(url)
+		{
+			var result = new Object();
+			var idx = url.lastIndexOf('?');
+	
+			if (idx > 0)
+			{
+				var params = url.substring(idx + 1).split('&');
+				
+				for (var i = 0; i < params.length; i++)
+				{
+					idx = params[i].indexOf('=');
+					
+					if (idx > 0)
+					{
+						result[params[i].substring(0, idx)] = params[i].substring(idx + 1);
+					}
+				}
+			}
+			
+			return result;
+		})(window.location.href);
+
+		// Sets the base path, the UI language via URL param and configures the
+		// supported languages to avoid 404s. The loading of all core language
+		// resources is disabled as all required resources are in grapheditor.
+		// properties. Note that in this example the loading of two resource
+		// files (the special bundle and the default bundle) is disabled to
+		// save a GET request. This requires that all resources be present in
+		// each properties file since only one file is loaded.
+		mxLoadResources = false;
+		mxBasePath = './';
+		mxImageBasePath = './images/'
+		mxLanguage = urlParams['lang'];
+		mxLanguages = ['de'];
+
+//日期字符串（yyyy-mm-dd）转时间
+	function getDateByStr(strDate) {    
+          var date = eval('new Date(' + strDate.replace(/\d+(?=-[^-]+$)/,    
+          function (a) { return parseInt(a, 10) - 1; }).match(/\d+/g) + ')');    
+          return date;    
+      }  
+//获取相对时间字符串
+    function getRelDayStr(strDate, dayOffset)
+    {
+    	var date = getDateByStr(strDate);
+    	date.setTime(date.getTime() + dayOffset * 24*60*60*1000);
+    	return date.format("yyyy-mm-dd");
+    }
+
+	</script>
+	<script src="../../dacp-lib/jquery/jquery-1.10.2.min.js" type="text/javascript"></script>
+	<script src="../../dacp-lib/bootstrap/js/bootstrap.min.js" type="text/javascript"></script>
+	<script src="../../dacp-lib/underscore/underscore-min.js" type="text/javascript"></script>
+	<script src="../../dacp-lib/backbone/backbone-min.js" type="text/javascript"></script>
+	<script src="../../dacp-view/ve/js/dacp-ve-js-1.0.js" type="text/javascript"></script>
+	
+	<script src="../../dacp-lib/highcharts/highcharts.js" type="text/javascript" ></script>
+	<script src="../../dacp-lib/datepicker/bootstrap-datepicker.js" type="text/javascript" ></script>
+	<script src="../../dacp-lib/datepicker/jquery.simpledate.js" type="text/javascript"></script>
+	<script src="../../dacp-lib/datepicker/jquery.pst-area-control.js" type="text/javascript"></script>
+
+	<script type="text/javascript" src="mxClient.js"></script>
+	
+	<script src="../../public/js/ai.core.js"></script>
+	<script src="../../public/js/ai.field.js"></script>
+	<script src="../../public/js/ai.jsonstore.js"></script>
+	<script src="../../public/js/ai.grid.js"></script>
+	 
+	<script src="../../meta/metaStore.v1.js"></script>
+   <script type="text/javascript">
+		 
+   	  var  METAPRJ = paramMap.METAPRJ||"";
+   	  var _METAPRJ= METAPRJ?"_"+METAPRJ:"";
+   	  var FLOWCODE = paramMap.FLOWCODE||paramMap.OBJNAME;
+   	  var FLOWNAME = paramMap.FLOWNAME;
+   	  var DATEARGS = paramMap.DATEARGS || getRelDayStr((new Date()).format("yyyy-mm-dd"), -1);
+
+   	  var CYCLE =  paramMap.CYCLE||"日",TOPICNAME =paramMap.TOPICNAME||"",LEVEL =paramMap.LEVEL||"" ;
+   	  var editor;
+   	  var graph;///图形对象
+   	  var graphStore;//数据存储对象
+
+
+//begin###################################################
+	
+	  //程序状态
+   	  var procStatCfg =
+   	  {
+	    "1":{remark:"创建成功",image:"images/proc_yellow.png"},
+	    "2":{remark:"依赖检测通过",image:"images/proc_yellow.png"},
+	    "3":{remark:"并发检测成功",image:"images/proc_yellow.png"},
+	    "4":{remark:"发送至agent",image:"images/proc_run.png"},
+	    "5":{remark:"正在运行",image:"images/proc_run.png"},
+	    "6":{remark:"运行成功",image:"images/proc_green.png"},
+
+	    "50":{remark:"等待重做",image:"images/proc_red.png"}, //queue_flag=0
+	    "51":{remark:"运行失败",image:"images/proc_red.png"}, //queue_flag=1
+	    "-1":{remark:"任务暂停",image:"images/proc_terminate.png"}, //-1,-2,-3暂停状态,
+	    "-2":{remark:"任务暂停",image:"images/proc_terminate.png"},
+	    "-3":{remark:"任务暂停",image:"images/proc_terminate.png"},
+	    "-5":{remark:"等待中断",image:"images/proc_yellow.png"},
+	    "-6":{remark:"失效",image:"images/proc_gray.png"},
+	    "-7":{remark:"未触发",image:"images/proc.png"} //默认图标
+	  }; 
+
+	  //程序状态对应的干预动作菜单项(key对应procStatCfg的key集合)	
+	  var procActionMenuCfg=
+	  {
+	  	"1,2,3":"查看执行条件,设置优先级,暂停执行,强制执行,强制通过",
+	  	"4,5":"停止运行,停止触发",
+	  	"6":"查看执行条件,查看日志,时长分析,重做当前,重做后续",
+	  	"50,51":"查看执行条件,查看日志,时长分析,重做当前,重做后续,强制通过",
+	  	"-1,-2,-3":"查看执行条件,设置优先级,强制执行,强制通过,恢复"
+	  }
+
+	  //数据状态
+	  var dataStatCfg = 
+	  {
+	  	"0":{remark:"数据未到达",image:"images/tab.png"}, //默认图标
+	    "1":{remark:"数据已到达",image:"images/tab_success.png"}	
+	  }
+	  
+  	  var eventStatCfg ={
+	  	"0":{remark:"数据未到达",image:"images/relay_gray.png"}, //默认图标
+	    "1":{remark:"数据已到达",image:"images/relay_green.png"}	
+	  }
+
+	  //程序优先级
+	  var priLevel = 
+	  {
+	  	"高" : "15",
+	  	"中" : "10",
+	  	"低" : "5"
+	  }
+
+//end###################################################
+   	  
+   	    ///从数据库加载流程图
+  var  loadfromDatabaseFlow=function( ){
+     if(!FLOWCODE) return ;
+     graphStore = new AI.JsonStore({
+			root:'root',
+			sql:"select XMLID,FLOWCODE, FLOWNAME,XML,EFF_DATE,CREATER,STATE, STATE_DATE,CURDUTYER, VERSEQ  from TRANSFLOW"+_METAPRJ+" where flowcode='"+FLOWCODE+"'",
+			loadDataWhenInit:true,
+			secondTable:"METAOBJ",
+			table:"TRANSFLOW"+_METAPRJ,
+			key:"XMLID",
+			dataSource:"METADBS"
+		});
+
+	 if (graphStore.getCount()!=0)
+	 {
+	 	var record = graphStore.getAt(0);
+	 	var xml =record.get("XML");
+	 
+		if (xml != null && xml.length > 0)
+		{
+			var doc = mxUtils.parseXml(xml); 
+			var dec = new mxCodec(doc); 
+			dec.decode(doc.documentElement, graph.getModel());
+		}
+	 }
+  };
+
+//更新单个程序图标
+ function  updateProcImage(record)
+ {
+ 	if(record)
+ 	{
+ 		var procName = record.get('PROC_NAME');
+ 		var procState = record.get('TASK_STATE');
+
+ 		//存在则更新
+ 		var procVertex = getObjByValue(procName);
+ 		var isStateInCfg = false; //状态是否在procStatCfg变量的key中
+ 		if (procVertex)
+ 		{
+ 			for(var key in procStatCfg)
+ 			{
+ 				if (procState == key)
+ 				{
+ 					isStateInCfg = true;
+ 					break;
+ 				}
+ 			} //end for
+
+ 			if(!isStateInCfg)
+ 			{
+ 				procState = "-7"; //默认图标
+
+ 				var reg = /^-?\\d+$/gi;				
+ 				if(reg.test(procState)) //是数字
+ 				{
+ 					if(Number(procState) > 50) //归为运行失败
+	 				{
+	 					procState = "50";
+	 				}
+ 				} 				
+ 			}
+
+ 			var pvStyle = "image;image=" + procStatCfg[procState].image;
+ 			if(pvStyle != procVertex.style) //状态不同则更新
+ 			{
+ 				procVertex.style = pvStyle;
+ 				graph.refresh(procVertex);	
+ 			}
+ 			
+
+ 		} //end if (procVertex)
+ 	}
+ }
+
+//更新单个数据图标
+ function updateDataImage(record)
+ {
+ 	if(record)
+ 	{
+ 		dataName = record.get('TARGET');
+
+ 		//存在则更新
+ 		dataVertex = getObjByValue(dataName);
+ 		if(dataVertex)
+ 		{
+ 			dvStyle = "image;image=" + dataStatCfg["1"].image;
+ 			if(dvStyle != dataVertex.style)
+ 			{
+ 				dataVertex.style = dvStyle;
+ 				graph.refresh(dataVertex);
+ 			} 			
+ 		}
+
+ 	}
+
+ }
+ 
+ //更新事件源数据图标
+ function updateEventImage(record)
+ {
+ 	if(record)
+ 	{
+ 		dataName = record.get('SOURCE');
+
+ 		//存在则更新
+ 		dataVertex = getObjByValue(dataName);
+ 		if(dataVertex)
+ 		{
+ 			dvStyle = "image;image=" + eventStatCfg["1"].image;
+ 			if(dvStyle != dataVertex.style)
+ 			{
+ 				dataVertex.style = dvStyle;
+ 				graph.refresh(dataVertex);
+ 			} 			
+ 		}
+
+ 	}
+
+ }
+
+//刷新界面，按照节点状态重绘节点图标
+  var refreshGraph = function(graph){
+  	
+  	//程序日志存储对象
+  	var procLogStore = new AI.JsonStore({
+  		root:'root',
+  		sql:"SELECT PROC_NAME, TASK_STATE FROM PROC_SCHEDULE_LOG WHERE DATE_ARGS = '"
+  			+ DATEARGS
+  			+ "' AND FLOWCODE = '" + FLOWCODE + "'",
+  		loadDataWhenInit:true,
+  		pageSize:-1,
+  		table:'PROC_SCHEDULE_LOG',
+  		key:'PROC_NAME',
+  		dataSource:"METADBS"
+  	});
+
+  	//处理程序节点图标
+  	for(var i=0; i<procLogStore.count; i++)
+  	{
+  		var record = procLogStore.getAt(i);
+  		updateProcImage(record);
+  	}
+
+  	//数据日志存储对象
+  	var dataLogStore = new AI.JsonStore({
+  		root:'root',
+  		sql:"SELECT TARGET, DATA_TIME FROM PROC_SCHEDULE_META_LOG WHERE DATA_TIME = '"
+  			+ DATEARGS.replace(/[-| ]/g,"")
+  			+ "' AND FLOWCODE = '" + FLOWCODE + "'",
+  		loadDataWhenInit:true,
+  		pageSize:-1,
+  		table:'PROC_SCHEDULE_META_LOG',
+  		key:'TARGET',
+  		dataSource:"METADBS"
+  	});
+
+  	//处理数据节点图标
+  	for(var i=0; i<dataLogStore.count; i++)
+  	{
+  		var record = dataLogStore.getAt(i);
+  		updateDataImage(record);
+
+  	}
+  	
+  	//事件源日志存储对象
+	var eventLogStore = new AI.JsonStore({
+  		root:'root',
+  		sql:"SELECT SOURCE, DATA_TIME FROM PROC_SCHEDULE_SOURCE_LOG WHERE DATA_TIME = '"
+  			+ DATEARGS.replace(/[-| ]/g,"")
+  			+ "' AND FLOWCODE = '" + FLOWCODE + "'",
+  		loadDataWhenInit:true,
+  		pageSize:-1,
+  		table:'PROC_SCHEDULE_SOURCE_LOG',
+  		key:'TARGET',
+  		dataSource:"METADBS"
+  	});
+
+  	//处理事件源节点图标
+  	for(var i=0; i<eventLogStore.count; i++)
+  	{
+  		var record = eventLogStore.getAt(i);
+  		updateEventImage(record);
+  	}
+  }
+
+ function getObjByValue(value){
+	var _result=null;
+	var parent = graph.getDefaultParent();
+	var childCount=graph.getModel().getChildCount(parent);
+	for (var i=0;i<childCount;i++){
+	   var child=graph.getModel().getChildAt(parent,i);
+	   if(child.value==value) {_result=child;break;}
+  }
+  return _result;
+};
+  
+function addObjToGraph(objtype,objname,objcnname,state,xmlid){
+	if(getObjByValue(objname)){alert(objname+',已经存在');return};
+	 var parent = graph.getDefaultParent();
+	 var _style='image;image=images/gear.png';
+	 
+	 if(meta.metaStore[objtype] && meta.metaStore[objtype].icon)  _style='image;image=images/'+meta.metaStore[objtype].icon;
+	 
+	 var x=Math.random()*100+300;
+	 var y=Math.random()*60+15;
+	 var mxCell=graph.insertVertex(parent,objname,objname, x, y, 40, 40,_style);
+	 mxCell.objType=objtype;
+	 mxCell.state=state;
+	 mxCell.value=objname;	    
+	 mxCell.cnname=objcnname;
+	 
+	 //mxCell.remark=(fd_objremark.getValue());
+	// if(objtype=='PROC' || objtype=='程序')  {AddProcRela(objname);};
+	 
+	 
+}; 
+
+
+//右键菜单响应函数
+function onPopMenuClick(evt, cell)
+{
+	if(!(cell && cell.isVertex() && "PROC" == cell.objType))
+	{
+		return;
+	}	
+	
+	var procName = cell.value;
+	var menuContent = evt.target.textContent;
+	var seqno = evt.target.attributes['seqno'];
+	var taskState = evt.target.attributes['taskState'];
+
+	//开始处理菜单项功能
+	var res;
+
+	if('暂停执行' == menuContent || '恢复' == menuContent)
+	{
+		var alterStr = menuContent=='暂停执行' ? "确定暂停程序?" : "确定恢复已暂停的程序?";
+		if(confirm(alterStr))
+		{
+			execSql="update PROC_SCHEDULE_LOG set TASK_STATE='"+(0-taskState)+"' where seqno='"+seqno+"' and  task_state='"+taskState+"'";
+			res=ai.executeSQL(execSql);
+		}
+	}
+	else 
+	if('强制通过' == menuContent)
+	{
+		if(confirm("确定强制通过?"))
+		{
+			execSql="update PROC_SCHEDULE_LOG set TASK_STATE=6,QUEUE_FLAG=0,TRIGGER_FLAG=0 where seqno='"+seqno+"' and task_state<>6 ";
+			res=ai.executeSQL(execSql);
+		}
+	}
+	else 
+	if('强制执行' == menuContent)
+	{
+		if(confirm("确定强制执行?"))
+		{
+			execSql="update PROC_SCHEDULE_LOG set TASK_STATE=2 where seqno='"+seqno+"' and task_state=1";
+			res=ai.executeSQL(execSql);
+		}
+	}
+	else 
+	if('停止触发' == menuContent)
+ 	{
+		if(confirm("确定停止触发?"))
+		{
+			execSql="update PROC_SCHEDULE_LOG set where seqno='"+seqno+"' and trigger_flag=1";
+			res=ai.executeSQL(execSql);
+		}
+	}
+	else 
+	if('重做当前' == menuContent || '重做后续' == menuContent) 
+	{
+		var alterStr = menuContent=='重做当前' ? "确定重做当前程序?" 
+			: "确定重做当前及后续程序?";
+		if(confirm(alterStr))
+		{
+			var _dateStr = new Date().format("yyyy-mm-dd hh:mm:ss").substr(0,16);
+			var taskState = "重做当前" == menuContent ? 1 : 0;
+
+			execSql = "update PROC_SCHEDULE_LOG set TASK_STATE="+ taskState +", TRIGGER_FLAG="+ taskState +",QUEUE_FLAG=0,END_TIME=NULL,EXEC_TIME=NULL,START_TIME='"+_dateStr+"' where seqno='"+seqno+"' and ( task_state=6 or task_state>=50 )";
+			res=ai.executeSQL(execSql);
+		}
+	}
+	else 
+	if('设置优先级' == menuContent)
+	{
+		if(confirm("确定调整优先级?"))
+		{
+			var priLevel = evt.target.attributes['priLevel'];
+			execSql = "update PROC_SCHEDULE_LOG set PRI_LEVEL = " + priLevel + " where seqno='"+seqno+"'";
+			res = ai.executeSQL(execSql);
+		}
+	}
+	else
+	if('停止触发' == menuContent)
+	{
+		executeSQL = "update PROC_SCHEDULE_LOG set TRIGGER_FLAG = 1 where seqno='" + seqno + "'";
+		res = ai.executeSQL(executeSQL);
+	}
+	else
+	if('停止运行' == menuContent)
+	{
+		alert('停止运行');
+	}
+	else
+	if('查看执行条件' == menuContent)
+	{
+		showDataDependency(seqno, procName, FLOWCODE);
+	}
+	else
+	if('查看日志' == menuContent)
+	{
+		showExecLog(seqno, FLOWCODE);
+	}	
+	else
+	if('时长分析' == menuContent)
+	{
+		showExecDuration(procName, FLOWCODE);
+	}	
+
+	if(res && res.success)
+	{
+		refreshAllPanel();
+	}
+}
+
+
+function createPopMenu(graph)
+{	
+	graph.panningHandler.factoryMethod = function(menu, cell, evt)
+	{
+		//仅处理程序节点
+		if((cell) && (cell.isVertex()) && ('PROC' == cell.objType))
+		{
+			//设置网格
+			menu.useGrid = true;
+
+			//程序日志存储对象
+		  	var procLogStore = new AI.JsonStore({
+		  		root:'root',
+		  		sql:"SELECT SEQNO, PROC_NAME, TASK_STATE FROM PROC_SCHEDULE_LOG WHERE DATE_ARGS = '"
+		  			+ DATEARGS
+		  			+ "' AND FLOWCODE = '" + FLOWCODE
+		  			+ "' AND PROC_NAME = '" + cell.value + "' ORDER BY status_time DESC",
+		  		loadDataWhenInit:true,
+		  		pageSize:-1,
+		  		table:'PROC_SCHEDULE_LOG',
+		  		key:'PROC_NAME',
+		  		dataSource:"METADBS"
+		  	});
+
+		  	if(!(procLogStore && procLogStore.getAt(0)))
+		  	{
+		  		alert("该程序日志不存在，请刷新后再试！");
+		  		return;
+		  	}
+		  	else
+		  	{
+		  		var record = procLogStore.getAt(0);		  		
+		  		var seqno = record.get('SEQNO');
+		  		var taskState = record.get('TASK_STATE');				
+
+		  		for(key in procActionMenuCfg)
+		  		{		
+		  			var menuItems = procActionMenuCfg[key].split(',');
+
+		  			//key可能是逗号分隔的，拆开判断		  			
+		  			var taskStateArr = key.split(",");
+		  			var isBreak = false;
+
+		  			for(var i=0; i<taskStateArr.length; i++)
+		  			{
+			  			if(taskStateArr[i] == taskState)//有相应的菜单则创建
+			  			{				
+
+			  				for(var j=0; j<menuItems.length; j++)
+			  				{
+			  					if("设置优先级" == menuItems[j]) //设置优先级包含子菜单
+			  					{
+			  						var subMenu = menu.addItem(menuItems[j], null, null);
+			  						
+			  						for(pKey in priLevel)
+			  						{
+			  							menu.addItem(pKey, null, function(evt)
+			  								{			  									
+			  									//暂存日志部分参数，方便后续处理 
+			  									evt.target.attributes['seqno'] = seqno;
+			  									evt.target.attributes['priLevel'] = 
+			  										priLevel[evt.target.textContent];
+
+			  									//临时修改为父节点名称，方便处理		
+			  									evt.target.textContent = "设置优先级";
+
+			  									//右键菜单响应函数
+					  							onPopMenuClick(evt, cell);
+
+			  								}, subMenu);
+			  								
+			  						}
+			  					}
+			  					else //非设置优先级项
+			  					{
+			  						var subMenu = menu.addItem(menuItems[j], null, function(evt)
+					  					{	
+					  						//暂存日志部分参数，方便后续处理
+					  						evt.target.attributes['seqno'] = seqno;
+					  						evt.target.attributes['taskState'] = taskState;
+
+					  						//右键菜单响应函数
+					  						onPopMenuClick(evt, cell); 
+					  					});
+
+			  					}	
+			  				}
+
+			  				isBreak = true;
+			  				break;
+			  			}
+		  			} //end for(i)
+
+		  			if(isBreak)
+		  			{
+		  				break;
+		  			}
+
+		  		} //end for(key)
+
+		  	}
+		}		
+	};
+}
+
+
+function loadGraph(graph)
+{
+	graph.getModel().beginUpdate();
+		try
+		{
+			//加载xml拓扑
+			loadfromDatabaseFlow();
+		}
+		finally
+		{
+			// Updates the display
+			graph.getModel().endUpdate();
+		}
+		
+		// Configures automatic expand on mouseover
+		graph.panningHandler.autoExpand = true;
+}
+
+function refreshAllPanel()
+{
+	//刷新统计面板
+	_totalStore.config.sql = getTotalStoreSql();
+	_totalStore.fetch();
+
+	//刷新graph
+	refreshGraph(graph);
+}
+
+$(document).ready(function(){
+	
+	// Checks if the browser is supported
+	if (!mxClient.isBrowserSupported())
+	{
+		// Displays an error message if the browser is not supported.
+		mxUtils.error('Browser is not supported!', 200, false);
+	}
+	else
+	{
+		// Disables built-in context menu
+		mxEvent.disableContextMenu(document.body);
+		
+		// Enables crisp rendering of rectangles in SVG
+//		mxRectangleShape.prototype.crisp = true;
+		
+		// Creates the graph inside the given container
+		graph = new mxGraph($('#graphContainer')[0]);
+
+ 		var node = mxUtils.load(STYLE_PATH + '/default.xml').getDocumentElement();
+		var dec = new mxCodec(node.ownerDocument);
+		dec.decode(node, graph.getStylesheet());
+	
+		// Enables rubberband selection
+		new mxRubberband(graph);
+						
+		loadGraph(graph);		
+
+	    // Installs context menu
+		createPopMenu(graph);
+
+		//other div
+		$("#panel1 .op-bt-closeall").click(function() {
+			$("#panel1").slideUp();
+		});
+
+		//初始化统计面板
+		_totalPanel.$el=$("#totalPanel");
+		_totalStore = new ve.SqlStore({
+			sql: getTotalStoreSql(),
+			dataSource:"METADBS"
+		});
+		_totalStore.on("reset",function(){
+			_totalPanel.store=_totalStore;
+			_totalPanel.store.fetched=true;
+			_totalPanel.render();
+		});
+	
+		//初始化查询面板
+		_queryPanel.$el=$("#queryPanel");
+		_queryPanel.render();
+
+		//刷新所有面板
+		refreshAllPanel();
+
+		//重置查询时间为DATEARGS的后一天
+		$("#date_query input").val(getRelDayStr(DATEARGS, 1));
+		
+		//双击事件
+		graph.dblClick = function(evt,cell){
+			if(!cell) return;		
+			manageObj(cell);
+			//currentCell=cell;
+			return false;
+		}
+	}
+});
+
+//对象查看或双击响应函数
+function manageObj(cell)
+{	
+	//以xmlid作为是否被初始化的依据
+	if(!cell.xmlid)
+	{
+		if('create' == cell.state)
+		{
+			doCreateObj(cell);
+		}
+		else
+		if('select' == cell.state)
+		{	
+			doSelectObj(cell);
+		}
+	}
+	else //已初始化
+	{
+		if('PROC' == cell.objType || 'EVENT' == cell.objType)
+			window.open("/"+contextPath+"/devmgr/WizCreETL.html?OBJNAME="+cell.xmlid);
+		else
+		if('TAB' == cell.objType)
+			window.open("/"+contextPath+"/devmgr/WizCreTable.html?OBJNAME="+cell.xmlid);			
+	}
+};
+
+//begin process div******************************************************************
+
+//查看依赖条件
+function showDataDependency(seqno, procName, flowCode, template){
+
+	$("#panel1 #tab_fullname").empty().append("查看依赖条件"); //标题
+	$("#panel1").css("z-index", 10011).slideDown(function() {
+	    $("#panel1 #op-panelContent").empty();
+	    $("#panel1 #op-panelContent").append(
+	    		'<div class="row">'
+				+ '<div class="col-sm-12">'
+				+ '<section class="panel panel-default">'
+				+ '<header class="panel-heading">任务序列：'+seqno+'&nbsp;&nbsp;&nbsp;&nbsp;程序名：'+procName+'</header> '
+				+ '</section>'
+	            + '<div class="table-responsive" id="relay_grid" style="width: 100%;overflow: auto;"></div>'
+				+ '</div></div>'
+		);
+		var _relayStore = new AI.JsonStore({
+			sql: "SELECT SEQNO ,PROC_NAME ,SOURCE,DATANAME,DBNAME,SOURCE_TYPE,DATA_TIME,CHECK_FLAG FROM PROC_SCHEDULE_SOURCE_LOG left join TABLEFILE on SOURCE=XMLID where SEQNO='"
+				+ seqno + "' AND FLOWCODE = '" + flowCode + "' ORDER BY check_flag",
+			pageSize:20,
+			key:"SEQNO",
+			table:"PROC_SCHEDULE_SOURCE_LOG",
+			dataSource:"METADBS"
+		});
+		var config={
+			id:'relay-grid',
+			store:_relayStore,
+			pageSize:20,
+			containerId:'relay_grid',
+			nowrap:true,
+			columns:[
+				{"header":"表ID","dataIndex":"SOURCE","className":"ai-grid-body-td-left"},
+				{"header":"表名","dataIndex":"DATANAME","className":"ai-grid-body-td-left"},
+				{"header":"数据库","dataIndex":"DBNAME","className":"ai-grid-body-td-left"},
+				{"header":"数据日期","dataIndex":"DATA_TIME","className":"ai-grid-body-td-left",render:function(value){ return value.get("DATA_TIME")=='N'?'无':value.get("DATA_TIME");}},
+				{"header":"检测通过","dataIndex":"CHECK_FLAG",render:function(value){ return _.template('<span class="glyphicon glyphicon-<%=CHECK_FLAG==0?"remove":"ok"%>"></span>',{'CHECK_FLAG':value.get("CHECK_FLAG")});}}
+			]
+	    };
+	    var grid =new AI.Grid(config);
+	    $("#panel1").css({"z-index": 10011,"height":screen.height}).slideDown();
+	});
+}
+
+//时长分析
+function showExecDuration(procName, flowCode)
+{	
+	var $el = $('#panel1');
+	if(procName&&procName.length>0){
+		var _procListStore = new AI.JsonStore({
+			sql: "select distinct proc_name from proc",
+			pageSize: -1,
+			table: "proc",
+			key: "PROC_NAME",
+			dataSource:"METADBS"
+		});
+		var _curIndex = 0;
+		for(var i=0;i<_procListStore.getCount();i++){
+			if(_procListStore.getAt(i).get("PROC_NAME")==procName){
+				_curIndex = i;
+			}
+		}
+		var _store = new ve.SqlStore({
+			sql:"select a.proc_name,b.proccnname,b.state from proc_schedule_log a,proc b where a.proc_name = b.proc_name and a.proc_name='"+procName
+				+ "' and a.FLOWCODE = '" + flowCode + "'" ,
+			dataSource:"METADBS"
+		});
+		_store.on("reset",function(store){
+			var _tmpl='';
+			var _title = _procListStore.getAt(_curIndex).get("PROC_NAME").toUpperCase();
+			if(store.models.length>0){
+				var _proc=store.models[0];
+				_tmpl =_.template(
+						'<div class="row">'
+					+ '<div class="col-md-6">'
+					+ '<section class="panel panel-default">'
+					+ '<header class="panel-heading font-bold">详细信息</header>'
+					+ '<ul class="list-group no-radius">'
+					+ '<li class="list-group-item"> <span class="pull-right"><%=proc_name%></span> 程序代码 </li>'
+					+ '<li class="list-group-item"> <span class="pull-right"><%=proccnname%></span> 程序名称 </li>'
+					+ '<li class="list-group-item"> <span class="pull-right"><%=state%></span> 状态 </li>'
+					+ '</ul>'
+					+ '<div class="line pull-in"></div>'
+					+ '</div><div class="col-md-6">'
+					+ '<section class="panel panel-default">'
+					+ '<header class="panel-heading font-bold">运行时长分析</header>'
+					+ '<section class="media-body"> '
+					+'<form class="m-b-none hide" action="index.html"> '
+					+ '<div class="input-group"> '
+					+ '<input type="text" placeholder="Input your comment here" class="form-control"> '
+					+ '<span class="input-group-btn"> '
+					+ '<button type="button" class="btn btn-primary">POST</button> </span> </div> </form> </section>'
+					+ '<div class="panel-body">'
+					+ '<div id="flot-bar-h" style="height: 240px"></div>'
+					+ '</div>'
+					+ '</section>'
+					+ '</div></div>'
+					+ '<div class="row">'
+					+ '<div class="col-md-12">'
+					+ '<section class="panel panel-default">'
+					+ '<header class="panel-heading font-font">运行时长分析趋势图</header>'
+					+ '<section class="media-body">'
+					+ '</section>'
+					+ '<div class="panel-body">'
+					+ '<div id="flot-line-h" style="height:240px"></div>'
+					+ '</div>'
+					+ '</section>'
+					+ '</div>'	
+					+ '</div>'
+					,{"proc_name":_proc.get("PROC_NAME"),"proccnname":_proc.get("PROCCNNAME"),"state":_proc.get("STATE")});
+			}else{
+				_tmpl = "暂无数据！";
+			}
+			$el.on("finishRender",function(){					
+				//获取数据
+				if($el.find('#flot-bar-h').length==1){
+					var _proc_name = _procListStore.getAt(_curIndex).get("PROC_NAME");
+					var _procTimerStore = new AI.JsonStore({
+						sql: "select * from"
+							+ " (select * from"
+							+ " (select distinct status_time,TIMESTAMPDIFF(MINUTE,EXEC_TIME,END_TIME) as DURATION from"
+							+ " proc_schedule_log where proc_name='"+_proc_name
+							+ "' and FLOWCODE = '" + flowCode + "') T"
+							+ " where T.DURATION IS NOT NULL order by T.status_time DESC LIMIT 30) T1 ORDER BY T1.status_time",
+						pageSize: -1,
+						table: "proc",
+						key: "PROC_NAME",
+						dataSource:"METADBS"
+					});
+					var _categories=[];
+					var _series=[];
+
+					for(var i=0; i<_procTimerStore.getCount(); i++)
+					{	
+						record = _procTimerStore.getAt(i);
+						_categories.push(record.get("STATUS_TIME"));
+						_series.push(record.get("DURATION"));
+					}
+				}
+				
+				//bar图：
+				$el.find('#flot-bar-h').empty().highcharts({
+			        chart: {type: 'bar'}, 
+			        title: {text: null},
+			        xAxis: {
+			        	categories: _categories,
+			            title: {text: null}
+			        },
+			        yAxis: {
+			        	min: 0,
+			            title: {
+			                text: '运行时长 (分)',
+			                align: 'high'                  
+			            },
+			            labels: {overflow: 'justify'}
+			        },
+			        tooltip: {valueSuffix: ' 分钟'},
+			        plotOptions: {bar: {dataLabels: {enabled: true}}},   
+			        legend: {
+			            layout: 'vertical',
+			            align: 'right',
+			            verticalAlign: 'top',
+			            x: -40,
+			            y: 100,
+			            floating: true,
+			            borderWidth: 0,
+			            backgroundColor: '#FFFFFF',
+			            shadow: true
+			        },                                                  
+			        series: [{
+			        	name: _proc_name,
+			            data: _series                                 
+			        }]
+			    });
+				
+				//line图：
+				$el.find('#flot-line-h').empty().highcharts({
+					chart:{
+						type: 'line',
+						width: 1200
+					},
+			        title: {text: ''},
+			        xAxis: {
+			        	title: {text: '时间'},
+			        	categories: _categories								            
+			        },
+			        yAxis: {
+			        	min: 0,
+			            title: {
+			                text: '运行时长 (分)', 
+			                align: 'high'           
+			            }
+			        },
+			        tooltip: {valueSuffix: '分钟'},
+			        series: [{
+			        	name: _proc_name,
+			            data: _series                                 
+			        }]
+			    });					
+					
+			});
+			openTableInfo("dura",_title,_tmpl,true);
+		});
+		_store.fetch();
+		
+		$el.on("push-left-dura",function(){
+			var _index = _curIndex==0?_procListStore.getCount()-1:_curIndex-1;
+			_curIndex = _index;
+			_store.config.sql = "select a.proc_name,b.proccnname,b.state from proc_schedule_log a,proc b where a.proc_name = b.proc_name and a.proc_name='"+_procListStore.getAt(_index).get("PROC_NAME")
+				+ "' and a.FLOWCODE = '" + flowCode + "'";
+			_store.fetch();
+		});
+		$el.on("push-right-dura",function(){
+			var _index = _curIndex==_procListStore.getCount()-1?0:_curIndex+1;
+			_curIndex = _index;
+			_store.config.sql = "select a.proc_name,b.proccnname,b.state from proc_schedule_log a,proc b where a.proc_name = b.proc_name and a.proc_name='"+_procListStore.getAt(_index).get("PROC_NAME")
+				+ "' and a.FLOWCODE = '" + flowCode + "'";
+			_store.fetch();
+		});
+	}else{
+		alert("没有找到表！");
+	}
+
+}
+
+//日志分析
+function showExecLog(seqno, flowCode){
+	var $el = $('#panel1');
+	var _procListStore = new AI.JsonStore({
+		sql: "select proc_name,seqno from proc_schedule_log where FLOWCODE = '" + flowCode + "'",
+		pageSize: -1,
+		table: "proc",
+		key: "PROC_NAME",
+		dataSource:"METADBS"
+	});
+	var _curIndex = 0;
+	for(var i=0;i<_procListStore.getCount();i++){
+		if(_procListStore.getAt(i).get("SEQNO")==seqno){
+			_curIndex = i;
+		}
+	}
+	var _store = new ve.SqlStore({
+		sql:"select a.seqno,a.proc_name,a.app_log,b.start_time,b.task_state,b.retrynum,b.status_time from proc_schedule_script_log a,proc_schedule_log b  where a.seqno=b.seqno and a.seqno='"+seqno
+			+ "' ",
+			// and a.FLOWCODE = '" + flowCode + "'",
+		dataSource:"METADBS"
+	});
+	_store.on("reset",function(store){
+		var tmpl = '';
+		var _title = _procListStore.getAt(_curIndex).get("PROC_NAME").toUpperCase();
+		if(store.models.length==1){
+			var _taskState = store.models[0].get("TASK_STATE");
+			_taskState = _taskState>=50?7:_taskState;
+			_taskState = _taskState<0&&_taskState>=-3?8:_taskState;
+			_taskState = _taskState==0?9:_taskState;
+			_taskState = _taskState==-5?10:_taskState;
+			_taskState = _taskState==-6?11:_taskState;
+
+			var _CLASS=['btn-default','btn-info','btn-info','btn-primary','btn-warning','btn-success','btn-danger','btn-warning','btn-default','btn-danger','btn-info','btn-warning','btn-danger'];
+			var _VALUE=['创建成功','依赖检测通过','并发检测成功','发送至agent','正在运行','运行成功','运行失败','暂停任务','重做后续','等待中断','失效','未触发','等待重做'];
+			
+			tmpl = _.template(
+				'<section class="panel panel-default">'
+				+ '<header class="panel-heading"> 脚本运行日志</header> '
+				+ '<article class="media">'
+				+ '<div class="media-body" style="margin:0px 40px 40px 40px;">'
+				+ '<div class="pull-right media-xs text-center text-muted"> '
+				+ '<strong class="h4"><%=retry%></strong> 次<br> <small class="label bg-gray text-xs">失败重做</small>'
+				+ '</div>'
+				+ '<h4><%=time%> <span class="label <%=cla%>"><%=name%></span> </h4>'
+				+ '<small class="block"><span>日志内容：</span></small>'
+				+ '<small class="block" ><pre><%=log%></pre></small>'
+				+ '</div>'
+				+ '</article>'
+				+'</section>',
+				{"cla":_CLASS[_taskState-1],"name":_VALUE[_taskState-1],"time":store.models[0].get("STATUS_TIME"),"log":store.models[0].get("APP_LOG"),"retry":store.models[0].get("RETRYNUM")});
+		}else{
+			tmpl = "找不到日志信息！";
+		}
+		openTableInfo("log",_title,tmpl,true);
+	});
+	_store.fetch();
+
+	$el.on("push-left-log",function(){
+		var _index = _curIndex==0?_procListStore.getCount()-1:_curIndex-1;
+		_curIndex = _index;
+		_store.config.sql = "select a.seqno,a.proc_name,a.app_log,b.start_time,b.task_state,b.retrynum,b.status_time from proc_schedule_script_log a,proc_schedule_log b  where a.seqno=b.seqno and a.seqno='"+_procListStore.getAt(_index).get("SEQNO")
+			+ "' and FLOWCODE = '" + flowCode + "'";
+		_store.fetch();
+	});
+	$el.on("push-right-log",function(){
+		var _index = _curIndex==_procListStore.getCount()-1?0:_curIndex+1;
+		_curIndex = _index;
+		_store.config.sql = "select a.seqno,a.proc_name,a.app_log,b.start_time,b.task_state,b.retrynum,b.status_time from proc_schedule_script_log a,proc_schedule_log b  where a.seqno=b.seqno and a.seqno='"+_procListStore.getAt(_index).get("SEQNO")
+			+ "' and FLOWCODE = '" + flowCode + "'";
+		_store.fetch();
+	});
+}
+
+function openTableInfo(tabname, title, template, flag) {
+	$("#panel1 #tab_fullname").empty().append(title); //标题
+	flag ? $("#panel1 .op-panelChange").show() : $("#panel1 .op-panelChange").hide();//隐藏、显示向左向右
+
+	//注册向左向右的点击事件
+	$("#panel1 .op-bt-close.op-panelChange").attr("id", "push-left-" + tabname);
+	$("#panel1 .op-bt-nav.op-panelChange").attr("id", "push-right-" + tabname);
+
+	$("#panel1 #op-panelContent").empty().append(template);//内容
+	$("#panel1").trigger("finishRender");//注册后续触发时间
+
+	$("#panel1").css({"z-index": 10011,"height":screen.height}).slideDown();
+	return false;
+};
+
+//统计面板
+var _totalPanel = new ve.HtmlWidget({
+	config:{
+		"className": "html",
+		"id": "view_total_up_total_id",
+		"template":'<div class="total_line row"><div class="total_run col-sm-2"><div class="total_1 ">流程运行概况</div><div class="total_2 "><%=curDate%></div></div>'
+			       + '<div class="total_detail col-sm-10">'
+			       + '<div class="detail_1"><label class="total_label_1"><%=finishRate%>%</label><div><label class="sm-detail" style="margin-top:8px;">程序运行成功率</label></div></div>'
+			       + '<div class="detail_2"><label class="total_label_2 detail_label" id="2"><%=total%></label><div><label class="sm-detail">程序总数</label></div></div>'
+			       + '<div class="detail_3"><label class="total_label_3 detail_label" id="6"><%=finish%></label><div><label class="sm-detail">程序执行成功</label></div></div>'
+			       + '<div class="detail_4"><label class="total_label_4 detail_label" id="7"><%=fail%></label><div><label class="sm-detail">程序执行失败</label></div></div>'
+			       + '<div class="detail_5"><label class="total_label_5 detail_label" id="5"><%=running%></label><div><label class="sm-detail">程序正在执行</label></div></div>'
+			       + '<div class="detail_6"><label class="total_label_6 detail_label" id="4"><%=queue%></label><div><label class="sm-detail">程序排队等待</label></div></div>'
+			       + '<div class="detail_7"><label class="total_label_7 detail_label" id="8"><%=unqueue%></label><div><label class="sm-detail">程序未触发</label></div></div>'
+			       + '</div></div>'
+
+				   + ''
+			       ,
+		"events":{
+			afterRender:function(){
+				var _view = this;
+				var clock = function(){
+					var date = new Date();
+			  		var curDateStr = getRelDayStr(DATEARGS, 1);
+			  		var finish = _totalStore.models[0].get("FINISH");
+			  		var fail =    _totalStore.models[0].get("FAIL");
+			  		var running = _totalStore.models[0].get("RUNNING");
+			  		var unqueue= _totalStore.models[0].get("UNQUEUE");
+			  		var queue = _totalStore.models[0].get("QUEUE");
+			  		var total = _totalStore.models[0].get("TOTAL");
+			  		var finish = finish==undefined||finish==null?0:finish;
+			  		var fail = fail==undefined||fail==null?0:fail;
+			  		var running = running==undefined||running==null?0:running;
+			  		var queue = queue==undefined||queue==null?0:queue;
+			  		var unqueue = unqueue==undefined||unqueue==null?0:unqueue;
+			  		var finishRate = (finish*100/(total==0?1:total)).toFixed(2);
+			  		_view.$el.addClass('info-general').empty().append(_.template(_view.config.template,{'curDate':curDateStr,'finishRate':finishRate,'total':total,'finish':finish,'fail':fail,'running':running,'queue':queue,'unqueue':unqueue}));
+			 	};
+				clock();
+			}
+		}
+	}
+});
+
+
+//生成随_date变化的动态sql
+function getTotalStoreSql()
+{
+
+	var curTeamCode = paramMap['TEAM_CODE'];
+	curTeamCodeCondi = (typeof(curTeamCode)=="undefined" || curTeamCode =='' 
+		|| curTeamCode == 'undefined' ) ? ('') : ("  and a.team_code = '"+curTeamCode+"' ");
+
+	var lastDay = DATEARGS || getRelDayStr((new Date()).format("yyyy-mm-dd") , 1);
+
+	return "select count(*) as total, sum(case when task_state=6 then 1 else 0 end ) as finish,"
+		+ " sum(case when task_state=5 then 1 else 0 end ) as running,"
+		+ " sum(case when task_state<=4 and task_state>-4 then 1 else 0 end ) as queue,"
+		+ " sum(case when task_state=-7 then 1 else 0 end) as unqueue,"
+		+ " sum(case when task_state>6 then 1 else 0 end ) as fail"
+		+ " from proc_schedule_log a where '" 
+		+ new Date().getTime() + "'='" + new Date().getTime() 
+		+ "' and date_args like '" + lastDay + "%'" + curTeamCodeCondi
+		+ " and FLOWCODE = '" + FLOWCODE + "'";
+}
+
+
+//查询面板
+var _queryPanel = new ve.FormWidget({
+	config:{
+		"class":"form",
+		"formClass":"form-inline",
+		"id": "view_total_up_total_tab_nav",
+		"items": [
+			{
+				"type": "date",
+				"id":"date_query", 
+				"fieldLabel":"日期",
+				"placeholder":"查询日期",
+				"format" : "yyyy-mm-dd",
+				//"sql":"SELECT CURDATE() AS DEFVAL FROM metauser GROUP BY DEFVAL",
+				"style": "min-width:60px;width:80px;"
+			},
+			{
+				"id":"search",
+				"value":"查询",
+				"type":"button",
+				"className":"search_btn btn-sm btn-primary",
+			},
+			{
+				"id":"refresh-grid",
+				"value":"",
+				"type":"button",
+				"className":"search_btn btn-sm btn-primary",
+			},
+			{
+				"id":"refresh-btn",
+				"value":"",
+				"type":"button",
+				"className":"btn btn-sm btn-primary hide",
+			}
+		],
+		'events': {
+			afterRender:function(){
+				var _view = this;
+				_view.$el.find('form').addClass('form_personal');
+				//_view.$el.css("padding","5px");
+				//_view.$el.css("padding","2px 2px 2px 20px");
+				_view.$el.find("#refresh-grid").empty().append(
+					'<div class="btn-group" data-toggle="buttons" style="margin-right: 5px;">'+
+					'<label id="m-g" class="btn btn-sm btn-info">'+
+					'<input type="radio" name="options">'+
+					'<i class="fa fa-check text-active "></i> 实时刷新</label>'+
+					'<label id="m-o" class="btn btn-sm btn-success">'+
+					'<input type="radio" name="options">'+
+					'<i class="fa fa-check text-active"></i> 手动刷新</label>'+
+					'</div>');
+				_view.$el.find("#refresh-btn button").append('<span class="glyphicon glyphicon-refresh"></span>');
+				var _refresh = function(flag){
+					if(flag){
+						REFRESHTIMER = setTimeout(function(){
+							refreshAllPanel();
+							_refresh(true);
+						},10000);
+					}else{
+						if(typeof REFRESHTIMER != 'undefined')
+						{
+							clearTimeout(REFRESHTIMER);
+							flag = false;
+						}						
+					}
+				};
+				_view.$el.find("#m-g").on("click",function(e){
+					_view.$el.find("#refresh-btn button").addClass("hide");
+					_refresh(true);
+				});
+				_view.$el.find("#m-o").on("click",function(e){
+					_view.$el.find("#refresh-btn button").removeClass("hide");
+					_refresh(false);
+				});
+			},
+			'click #search':function(){
+
+				//查询时先改变DATEARGS
+				DATEARGS = getRelDayStr($('#date_query input').val(), -1);
+
+				loadGraph(graph);
+				refreshAllPanel();
+			},
+			'click #refresh-btn':function(){
+
+				loadGraph(graph);
+				refreshAllPanel();
+			}
+		}
+	}
+
+});
+
+
+
+//end process div********************************************************************
+
+	</script>
+</head>
+<body>
+
+	<div class="row">
+		<div class="col-md-8">
+			<div class="row breadcrumb" id="totalPanel" ></div>
+		</div>	
+		<div class="col-md-4">
+			<div class="row breadcrumb" id="queryPanel" style="margin-top:5px;padding-top:12px;padding-bottom:12px;"></div>
+		</div>
+    </div>
+
+	<!-- Creates a container for the graph with a grid wallpaper -->
+	<div id="graphContainer"
+		style="overflow:hidden;width:100%;height:width:100% ;cursor:default;">
+	</div>
+
+	<!-- begin div panel1  -->
+	<div id="panel1" class="op-panel solid-white" data-open="0"
+		style="z-index: 10000001; top: 0px; left: 0px; height: 342px; display: none;">
+		<!-- Start Control -->
+		<div class="op-panelctrl solid-black">
+			<!-- Close Button -->
+			<div class="op-panelbt op-bt-close op-panelChange" id="push-left">
+				<img src="../images/48-arrow-left.png" alt="close">
+			</div>
+			<!-- End Close button -->
+			<div class="op-panelbt op-tab op-bt-nav op-panelChange"
+				id="push-right">
+				<img src="../images/48-arrow-right.png" alt="navbar">
+			</div>
+			<!-- NavBar Button -->
+			<div class="op-panelbt op-tab op-bt-nav">
+				<h2 class="title" id="tab_fullname">NWH.MBUSER,用户资料表</h2>
+			</div>
+			<!-- End NavBar Button -->
+			<!-- Close All -->
+			<div class="op-panelbt op-bt-closeall pull-right">
+				<img src="../images/48-close-white.png" alt="close all">
+			</div>
+			<!-- End Close All -->
+			<div class="clearspace"></div>
+		</div>
+		<!-- End Control -->
+		<!-- Panel Content -->
+		<div class="op-panelform" id="op-panelContent"
+			style="padding: 15px 40px 100px"></div>
+		<!-- End Panel Content -->
+	</div>
+	<!-- end div panel1  -->
+	  
+</body>
+</html>

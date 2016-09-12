@@ -1,0 +1,30 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>dacp-task-web-parent</artifactId>
+	<name>DACP TASK WEB - Parent</name>
+	<packaging>pom</packaging>
+	<parent>
+		<groupId>com.asiainfo.dacp</groupId>
+		<artifactId>dacp-parent</artifactId>
+		<version>2.0.5</version>
+	</parent>
+	<version>2.0.0</version>
+	<properties>
+		<dacp.framework.version>2.1.0</dacp.framework.version>
+		<dacp.util.version>2.0.1</dacp.util.version>
+		<dacp.ve.version>2.0.3-snapshot</dacp.ve.version>
+		<dacp.me.version>2.1.0</dacp.me.version>
+	</properties>
+	<organization>
+		<name>AsiaInfo Big Data, Inc.</name>
+		<url>http://www.asiainfo.com</url>
+	</organization>
+	<repositories>
+		<repository>
+			<id>nexus-dacp</id>
+			<name>Nexus AsiaInfo DACP Dept.</name>
+			<url>http://nexusserver/nexus/content/groups/public/</url>
+		</repository>
+	</repositories>
+</project>

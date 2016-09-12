@@ -1,0 +1,171 @@
+﻿<!DOCTYPE html> 
+<html lang="zh" class="app">
+<head>  
+	<meta charset="utf-8" /> 
+	<title>大数据开放平台</title>  
+	<meta http-equiv="X-UA-Compatible" content="chrome=1,ie=edge"/>
+	<link href="../dacp-lib/bootstrap/css/bootstrap.min.css" type="text/css" rel="stylesheet" media="screen"/>
+	<link href="../dacp-lib/datepicker/datepicker.css" type="text/css" rel="stylesheet" media="screen"/>
+	<link href="../dacp-lib/datepicker/jquery.simpledate.css" type="text/css" rel="stylesheet" media="screen"/>
+	<link href="../dacp-lib/datepicker/jquery.pst-area-control.css" type="text/css" rel="stylesheet" media="screen"/>
+	<link href="../dacp-view/ve/css/dacp-ve-js-1.0.css" type="text/css" rel="stylesheet" media="screen"/>
+	<link rel="stylesheet" href="implWidgets.css" type="text/css" />
+	<link rel="stylesheet" href="../public/css/ai.css" type="text/css" />
+	
+	<script src="../dacp-lib/jquery/jquery-1.10.2.min.js" type="text/javascript"></script>
+
+	<script src="../dacp-lib/bootstrap/js/bootstrap.min.js"></script>
+	<script src="../dacp-lib/underscore/underscore-min.js" type="text/javascript"></script>
+	<script src="../dacp-lib/backbone/backbone-min.js" type="text/javascript"></script>
+	<script src="../dacp-lib/highcharts/highcharts.js" type="text/javascript" ></script>
+	<script src="../dacp-lib/datepicker/bootstrap-datepicker.js" type="text/javascript" ></script>
+	<script src="../dacp-lib/datepicker/jquery.simpledate.js" type="text/javascript"></script>
+	<script src="../dacp-lib/datepicker/jquery.pst-area-control.js" type="text/javascript"></script>
+	<script src="../dacp-view/ve/js/dacp-ve-js-1.0.js" type="text/javascript" charset="utf-8"></script>
+	<script src="../ve/ve-context-path.js" type="text/javascript" charset="utf-8"></script>
+	<script src="../public/js/ai.core.js"></script>
+	<script src="../public/js/ai.field.js"></script>
+	<script src="../public/js/ai.jsonstore.js"></script>
+	<script src="../public/js/ai.grid.js"></script>
+    <script src="../lib/bootstrap-treeview.min.js"> </script>
+    <script src="../lib/jquery.layout-latest.js" type="text/javascript"> </script>
+    <script src="../public/js/ai.treeview.js"></script>
+	<script src="interMonitor.js" type="text/javascript"></script>
+	<style>
+		.ui-layout-toggler-west {
+			border-width: 0;
+		}
+		
+		.ui-layout-toggler-west div {
+			width: 4px;
+			height: 35px; /* 3x 35 = 105 total height */
+		}
+		
+		.ui-layout-toggler-west .btnCenter {
+			background: #00C;
+		}
+		
+		.ui-layout-toggler-west .btnWest {
+			background: #090;
+		}
+		
+		.ui-layout-toggler-west .btnBoth {
+			background: #C00;	
+		}
+		.totalhighLight{
+			font-weight: bold;
+  		color: #4CB6CB;
+		}	
+		.detail_3 {
+			border-left: 1px solid #21EE0F;
+			border-left-width: 3px;
+		}
+	</style>
+	<script type="text/javascript">
+	    var isDefault=true;//true:默认进来，带有过滤条件--显示失败的列表信息，false:不带过滤条件
+		var searchAct="";
+		var _totalStore = "";
+		var _contentStore = "";
+		var _opStore ="";
+		var task_state = "-1";
+		var _finalTotalCondi = "";
+		var totalSelectoin="-1";
+		var _CLASS=['btn-default','btn-danger','btn-success','btn-warning'];
+		var _VALUE =['处理中','处理失败','处理成功','等待处理'];
+		var REFRESHTIMER;
+		//去重
+		var temptablesql ="select a.fullintercode,a.inter_name,a.inter_cycle,a.DATAREGION,a.SOURCESYS,a.target_table,b.op_time AS batch_no,b.check_put_status,b.update_time,b.remark,b.op_time from" 
+											+" (select fullintercode,inter_name,inter_cycle,DATAREGION,SOURCESYS,target_table,batch_no from  inter_cfg where status='1') a"
+											+" left join" 
+											+" (select bb.inter_code,bb.check_put_status,bb.update_time,bb.remark,bb.op_time from inter_log bb  inner join" 
+											+" (select inter_code,max(op_time) op_time from inter_log group by inter_code) aa on aa.inter_code=bb.inter_code and aa.op_time= bb.op_time) b"
+											+" on a.fullintercode=b.inter_code";
+		var _finalTotalSql="SELECT c.check_put_status,COUNT(1) COUNT FROM ("+temptablesql+")c where 1=1 {condi} GROUP BY c.check_put_status";
+		var _finalQuerySql="select * from ("+temptablesql+") c where 1=1 {condi} ORDER BY c.update_time DESC";
+		var _finalTreeSql ="select SOURCESYS,(SELECT rowname FROM metaedimdef WHERE dimcode='DIM_INTERSOURCESYS' AND rowcode=SOURCESYS) AS SOURCESYSNAME,"
+										+"DATAREGION,(SELECT rowname FROM metaedimdef WHERE dimcode='DIM_INTERDATAREGION' AND rowcode=DATAREGION) AS DATAREGIONNAME,"
+										+"INTER_CYCLE,(SELECT rowname FROM metaedimdef WHERE dimcode='DIM_INTERINTERCYCLE' AND rowcode=INTER_CYCLE) AS INTER_CYCLENAME,"
+										+"COUNT(1) NUM FROM ("+temptablesql+") c where 1=1 {condi} GROUP BY SOURCESYS,DATAREGION,INTER_CYCLE";
+		//全量
+		var temptablesql2= "SELECT a.fullintercode,a.inter_name,a.inter_cycle,a.DATAREGION,a.SOURCESYS,a.target_table,a.batch_no,b.check_put_status,b.update_time,b.remark,b.op_time FROM (SELECT fullintercode,inter_name,inter_cycle,DATAREGION,SOURCESYS,target_table,batch_no FROM  inter_cfg WHERE STATUS='1') a LEFT JOIN (SELECT inter_code,check_put_status,update_time,remark,op_time FROM inter_log) b ON a.fullintercode=b.inter_code"
+		var _finalQuerySql2 = "SELECT fullintercode,inter_name,inter_cycle,DATAREGION,SOURCESYS,target_table,op_time AS batch_no,check_put_status,update_time,remark,op_time FROM ("+temptablesql2+") c WHERE 1=1 {condi} ORDER BY c.update_time DESC";
+		var _finalTotalSql2= "SELECT c.check_put_status,COUNT(1) COUNT FROM ("+temptablesql2+") c WHERE 1=1 {condi} GROUP BY c.check_put_status";
+		var _finalTreeSql2 = "SELECT SOURCESYS,(SELECT rowname FROM metaedimdef WHERE dimcode='DIM_INTERSOURCESYS' AND rowcode=SOURCESYS) AS SOURCESYSNAME,DATAREGION,(SELECT rowname FROM metaedimdef WHERE dimcode='DIM_INTERDATAREGION' AND rowcode=DATAREGION) AS DATAREGIONNAME,INTER_CYCLE,(SELECT rowname FROM metaedimdef WHERE dimcode='DIM_INTERINTERCYCLE' AND rowcode=INTER_CYCLE) AS INTER_CYCLENAME,COUNT(1) NUM FROM ("+temptablesql2+") c WHERE 1=1 {condi} GROUP BY SOURCESYS,DATAREGION,INTER_CYCLE";
+		var _realQuerySql = _finalQuerySql;
+		var _realTotalSql = _finalTotalSql;
+		var _realTreeSql= _finalTreeSql;
+										
+		$(document).ready(function() {
+			var toggleButtons = '<div class="btnCenter"></div>'
+			+ '<div class="btnBoth"></div>'
+			+ '<div class="btnWest"></div>';
+			$('body').layout({
+			    	sizable:						false
+				,	animatePaneSizing:				true
+				,	fxSpeed:						'slow'
+				,	spacing_open:					0
+				,	spacing_closed:					0
+				,	west__spacing_closed:			8
+				,	west__spacing_open:				8
+				,	west__togglerLength_closed:		105
+				,	west__togglerLength_open:		105
+				,	west__togglerContent_closed:	toggleButtons
+				,	west__togglerContent_open:		toggleButtons
+				,	west__size:						205
+				,	north__size: 					100
+			});
+			_totalPanel.$el=$("#totalPanel");
+			_queryPanel.$el=$("#queryPanel");
+			_grid.$el=$("#tabpanel1");
+			var temp_state ="";
+			temp_state = "and c.CHECK_PUT_STATUS ='1'";//这里默认显示处理失败的，状态为1
+			_totalStore = new ve.SqlStore({
+				dataSource:'METADBS',
+				sql:_realTotalSql.replace("{condi}",temp_state)
+			});
+			_totalStore.on("reset",function(){
+				_totalPanel.store=_totalStore;
+				_totalPanel.store.fetched=true;
+				_totalPanel.render();
+			});
+		
+			buildTreeView(_realTreeSql.replace("{condi}",temp_state));
+			_queryPanel.render();
+			_totalStore.fetch();
+			var execSql = _realQuerySql.replace("{condi}",temp_state);
+			_contentStore=new ve.SqlStore({
+				dataSource:'METADBS',
+				sql:execSql
+			});
+			_contentStore.on("reset",function(){
+				_grid.store=_contentStore;
+				_grid.store.fetched=true;
+				_grid.render();
+				
+				$(".btnCenter").hide();
+				$(".btnBoth").hide();
+				$(".btnWest").hide();
+				if(_contentStore.length >0){
+					$(".btnCenter").show();
+					$(".btnBoth").show();
+					$(".btnWest").show();
+				}
+			});
+			_contentStore.fetch();
+		});
+	</script>
+</head>
+
+<body class="">
+	<div class="ui-layout-north">
+	   <div class="row breadcrumb" id="totalPanel" style="margin:5px 1px 1px 1px;padding:6px 0px;"></div>
+	   <div  id="queryPanel"></div>
+	</div>
+	<div class="ui-layout-west" style="overflow:auto">
+		<div id="treeview6" class="test"></div>
+	</div>
+	<div class="ui-layout-center">
+		<div id="tabpanel1"></div>
+	</div>
+</body>
+</html>
